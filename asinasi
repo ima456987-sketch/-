@@ -1,0 +1,20 @@
+local player = game.Players.LocalPlayer
+local char = player.Character
+
+if char then
+    -- 足のパーツを特定して削除
+    local partsToRemove = {"Left Leg", "Right Leg", "LeftFoot", "RightFoot"}
+    
+    for _, partName in pairs(partsToRemove) do
+        local part = char:FindFirstChild(partName)
+        if part then
+            part:Destroy()
+        end
+    end
+    
+    -- 足がなくなると移動ができなくなる場合があるため、
+    -- 念のためHumanoidの設定を調整する（必要に応じて）
+    if char:FindFirstChild("Humanoid") then
+        char.Humanoid.HipHeight = 0 -- 高さを調整
+    end
+end
