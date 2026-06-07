@@ -1,0 +1,60 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- GUIの作成
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "LegControlGui"
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+
+-- ボタン作成関数
+local function createButton(name, text, position)
+    local btn = Instance.new("TextButton", frame)
+    btn.Name = name
+    btn.Text = text
+    btn.Size = UDim2.new(0, 180, 0, 40)
+    btn.Position = position
+    return btn
+end
+
+local btnOneLeg = createButton("OneLeg", "片足", UDim2.new(0, 10, 0, 10))
+local btnNoLegs = createButton("NoLegs", "あしなし", UDim2.new(0, 10, 0, 55))
+
+-- 片足機能（透明化・縮小）
+btnOneLeg.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if not char then return end
+    
+    local rightLeg = char:FindFirstChild("Right Leg") or char:FindFirstChild("RightLeg")
+    if rightLeg then
+        rightLeg.Transparency = 1
+        rightLeg.Size = Vector3.new(0.1, 0.1, 0.1)
+        for _, child in pairs(rightLeg:GetChildren()) do
+            if child:IsA("Accessory") or child:IsA("Decal") then
+                child:Destroy()
+            end
+        end
+    end
+end)
+
+-- あしなし機能（パーツ削除）
+btnNoLegs.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if not char then return end
+    
+    local partsToRemove = {"Left Leg", "Right Leg", "LeftFoot", "RightFoot"}
+    for _, partName in pairs(partsToRemove) do
+        local part = char:FindFirstChild(partName)
+        if part then
+            part:Destroy()
+        end
+    end
+    
+    local humanoid = char:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.HipHeight = 2
+    end
+end)
