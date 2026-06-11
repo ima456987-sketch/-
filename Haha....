@@ -1,0 +1,3040 @@
+"-- ============================================
+-- SolarisHub - Roblox スクリプト
+-- 讒矩€�蛹痛�譛€驕ｩ蛹痛ヰ繝ｼ繧ｸ繝法繝ｳ�医九繝ｼ繝舌う繝ｳ繝峨ち繝門炎髯､縲√ち繝夜��丈ソリオ豁"��
+-- ToyMod Wings 邨亜蜷育沿 + Blitz Line + KillAll/BringAll/TargetKill + Train Control
+-- ============================================
+
+-- ============================================
+-- UI繝ｩ繧、繝悶Λ繝™縺®隱シュー縺ソ霎ｼ縺
+-- ============================================
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/nooblol2/SolarisHub.gg/refs/heads/main/good.orion')))()
+
+-- ============================================
+-- 繧オ繝ｼ繝薙せ縺®蜿門セ。
+-- ============================================
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+ローカル RunService = ゲーム:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local Lighting = game:GetService("Lighting")
+local VirtualUser = game:GetService("VirtualUser")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Camera = Workspace.CurrentCamera
+
+-- ============================================
+-- 繝™繝「繝ｼ繝医ウ繝吶Φ繝医繝輔か繝ｫ繝€縺®蜿ら��域掠譛溷®夂セスｩ��
+-- ============================================
+local characterEventsFolder = ReplicatedStorage:WaitForChild("CharacterEvents")
+local ragdollRemoteEvent = characterEventsFolder:WaitForChild("RagdollRemote")
+local struggleEvent = characterEventsFolder:WaitForChild("Struggle")
+
+local grabEventsFolder = ReplicatedStorage:WaitForChild("GrabEvents")
+local setNetworkOwnerEvent = grabEventsFolder:WaitForChild("SetNetworkOwner")
+local destroyGrabLineEvent = grabEventsFolder:WaitForChild("DestroyGrabLine")
+
+local menuToysFolder = ReplicatedStorage:WaitForChild("MenuToys")
+local SpawnToyRF = menuToysFolder:WaitForChild("SpawnToyRemoteFunction")
+local DeleteToyRE = menuToysFolder:WaitForChild("DestroyToy")
+
+local playerEventsFolder = ReplicatedStorage:WaitForChild("PlayerEvents")
+local StickyPartEvent = playerEventsFolder:WaitForChild("StickyPartEvent")
+
+local isHeldValue = LocalPlayer:WaitForChild("IsHeld")
+
+local playerScriptsFolder = LocalPlayer:WaitForChild("PlayerScripts")
+local anticreatelinelocalscript = playerScriptsFolder:WaitForChild("CharacterAndBeamMove")
+
+local spawnedInToysFolder = Workspace:WaitForChild(LocalPlayer.Name .. "SpawnedInToys")
+
+-- 繧「繝ｳ繝√ヰ繝ｼ繝ｳ逕理豸育↓繝代�繝」
+local apagarfogo = Workspace.Map.Hole.PoisonBigHole:WaitForChild("ExtinguishPart")
+apagarfogo.Size = Vector3.new(0.5, 0.5, 0.5)
+apagarfogo.Transparency = 1
+apagarfogo:FindFirstChild("Tex") の場合
+    apagarfogo.Tex.透明度 = 1
+終わり
+
+-- Blitz逕良霑ス蜉�繧､繝吶Φ繝。
+local GrabEvents = ReplicatedStorage:WaitForChild("GrabEvents")
+local SetNetworkOwner = GrabEvents:WaitForChild("SetNetworkOwner")
+local CreateGrabLine = GrabEvents:WaitForChild("CreateGrabLine")
+local ExtendGrabLine = GrabEvents:WaitForChild("ExtendGrabLine")
+local updateLineColorsEvent = ReplicatedStorage:WaitForChild("DataEvents"):WaitForChild("UpdateLineColorsEvent")
+
+-- 繝医Ξ繧、繝ｳ繧ｳ繝ｳ繝医Ο繝ｼ繝ｫ逕ワー
+local PM = playerScriptsFolder:WaitForChild("PlayerModule")
+local CM = require(PM:WaitForChild("ControlModule"))
+
+-- ============================================
+-- 繧ー繝キュー繝ｼ繝舌Ν險キュー螳壹ユ繝ｼ繝悶Ν�医ち繝夜��シ。
+-- ============================================
+ローカル設定 = {
+    -- 繧ー繝ｩ繝悶ち繝。
+    グラブ = {
+        強度 = 5000、
+        EnableThrowStrength = false、
+        VoidGrab = false、
+        DeathGrab = false、
+        KickGrab = false、
+        NoclipGrab = false、
+    },
+    -- 「繝ウー繝√ち繝」
+    アンチ = {
+        -- 菫晁キュキ讖溯
+        AntiGrab = false、
+        -- 驍™鬲泌粛清遲
+        AntiBurn = false、
+        防爆 = false、
+        AntiVoid = false、
+        AntiLag = false、
+        AntiKick = false、
+        AntiKickKunai = false、
+        -- 霑ス蜉�縺®アンチ讖溯。
+        AntiSticky = false、
+        AntiPaint = false、
+        AntiGucciBlobman = false、
+        AntiGucciTrain = false、
+        AntiRagdoll = false、
+        AntiBanana = false、
+    },
+    -- 繝悶Ο繝悶、繝外繝吶、繧苦繧繝。
+    BlobmanBeta = {
+        ignoreFriends = false、
+        kickAuraActive = false、
+        キックディレイ = 0.18、
+        FloatAmount = 16、
+        ignoreHeights = {526.377685546875, 5.2832231521606445},
+        currentSide = "左",
+        isExecuting = false、
+        auraKickedPlayers = {},
+        selectedTarget = nil、
+    },
+    -- PvP ソフト。
+    PvP = {
+        SilentAimEnabled = false、
+        照準強度 = 50、
+        AutoGrabEnabled = false、
+    },
+    -- ループ讖溯「繧魂害シ」KillAll邨ア蜷茨シ。
+    ループ = {
+        KillAll = false、
+        BringAll = false、
+        TP_Priority = 0、
+        テレポート高さ = -3、
+        ターゲットプレイヤー = {}、
+        OriginalPosition = nil、
+        LastTeleportTime = 0、
+        テレポートクールダウン = 0.3、
+        処理済みプレイヤー = {}、
+        WhitelistFriends = false、
+        LastTargetKillTime = 0、
+        killAllLoop = nil、
+        targetKillLoop = nil、
+        killAllEnabled = false、
+        targetKillEnabled = false、
+        floatConnection = nil、
+    },
+    -- ビジュアル
+    ビジュアル = {
+        ESPEnabled = false、
+        ESPFillColor = Color3.fromRGB(255, 0, 0),
+        ESPOutlineColor = Color3.fromRGB(255, 255, 255),
+        ESPFillTransparency = 0.5、
+        ESPOutlineTransparency = 0、
+        ShowHitbox = false、
+        HitboxColor = Color3.fromRGB(0, 100, 255),
+        ShowPlayerInfo = false、
+        カメラ視野角 = 70、
+        SpectatePlayer = nil、
+    },
+    -- オーラ繧々繝
+    オーラ = {
+        VoidAura = false、
+        RagdollAura = false、
+        DeathAura = false、
+        FireAura = false、
+        AuraRadius = 32、
+        IgnoreFriendAura = false、
+    },
+    -- Line繧ソ繝厄紙Blitz邨ア蜷茨紙。
+    行 = {
+        ultragrabbb = false、
+        LineColorChangeValue = Color3.fromRGB(255, 0, 0),
+        CrazyLine = false、
+        InvisibleLine = false、
+        RainbowLine = false、
+        FlashingLine = false、
+        GradientLine = false、
+        線速度 = 1、
+        ストロボ速度 = 0.5、
+        PulseEffect = false、
+        IncreaseLineExtend = 3、
+        ラグ強度 = 150、
+        LagServerActive = false、
+    },
+    -- ToyMod繧桑繝厄シ育オア蜷茨紙
+    ToyMod = {
+        UsePlotItems = false、
+        XSpacing = 0.1、
+        YOffset = 0、
+        ZOffset = 0、
+        角度H = 90、
+        角度V = 0、
+        フラップ有効 = false、
+        フラップ速度 = 2、
+        フラップ範囲 = 30、
+        フラップタイプ = 1、
+        SpeedLinkFlap = false
+    },
+    -- 列車制御システム
+    TrainControl = {
+        有効 = false、
+        飛行速度 = 15、
+        NoClip = false、
+        おもちゃ名 = "フードハンバーガー"
+        間隔 = 0.01、
+        HeadOffset = Vector3.new(0, 3, 0),
+        SpawnTimeout = 0.1、
+        SPEED_MULT = 25、
+        BV_P = 25000、
+        BG_P = 6000、
+        SeatGraceSeconds = 2.5、
+        SitRetryInterval = 0.01、
+        ネットワーク所有権間隔 = 0.005、
+        ParallelOwnershipThreads = 5、
+        実行中 = false、
+        TrainEnableAt = 0、
+        LastSitAttempt = 0、
+        HadSeatOnce = false、
+        LoopThread = nil、
+        VFlyEnabled = false、
+        TargetPart = nil、
+        BV = ゼロ、
+        BG = nil、
+        LastNetworkOwnership = 0、
+        所有権スレッド = {}、
+        NoClipVehicleModel = nil、
+        NoClipCharModel = nil、
+        NoClipVehicleState = {},
+        NoClipCharState = {},
+        prevOcclusionMode = nil、
+    },
+    -- その他
+    その他 = {
+        ThirdPerson = false,
+        FPSBooster = false、
+    },
+    -- キーバインド
+    キーバインド = {
+        SilentAimToggleKey = Enum.KeyCode.Q、
+    }
+}
+
+-- ============================================
+-- 蜀�Κ迥ｶ諷狗®｡逅�ユ繝ｼ繝悶Ν
+-- ============================================
+ローカルステート = {
+    -- 蜀�Κ繝輔Λ繧ー
+    IsCharacterInRagdoll = false、
+    noclipRunning = false、
+    noclipLoop = nil、
+    noclipTrackedChar = nil、
+    isBarrierRunning = false、
+    
+    -- PvP「騾」
+    CameraClone = nil、
+    CameraInitialized = false、
+    HRPs = {}、
+    文字 = nil、
+    ヒューマノイド = nil、
+    ルート = nil、
+    GrabbedPart = nil、
+    LastGrabbedTarget = nil、
+    LastGrabbedTime = 0、
+    到達距離 = 30、
+    LastGrabTime = 0、
+    GrabCooldown = 0.05、
+    
+    -- 繧ｳ繝阪け繧キ繝§繝ｳ邂｡逅。
+    接続 = {
+        強度 = nil、
+        antiGrab = nil、
+        antiExplosionChar = nil、
+        歩行速度 = nil、
+        infiniteJump = nil、
+        thirdPerson = nil、
+        fpsBooster = nil、
+    },
+    
+    -- 繝ｫ繝ｼ繝礼®｡逅�
+    ループ = {
+        noclip = nil、
+        kunaiCheck = nil、
+        antiBanana = nil、
+    },
+    
+    -- 問題はありません。
+    struggleTasks = {},
+    GrabMaintainConnections = {},
+    
+    -- 繝��繧ソ菫晏シュ。
+    ESPObjects = {},
+    HitboxObjects = {},
+    名前ラベル = {}、
+    paintPartsBackup = {},
+    paintConnections = {},
+    originalSettings = nil、
+    currentKunai = nil、
+    
+    -- 繧ソ繧､繝槭�邂｡逅。
+    タイマー = {
+        AuraTimer = 0、
+        espTimer = 0、
+        AntiBananaTimer = 0、
+        LastUpdate = 0、
+        UPDATE_INTERVAL = 0.1、
+    },
+    
+    -- 励起Ξ繧､繝､シャシュシュアソシエ。
+    originalJump = {
+        UseJumpPower = nil、
+        JumpPower = nil、
+        ジャンプ高さ = nil、
+    },
+    
+    -- 繧「繝ウー繝；ucci逕ワー」
+    antiGucci = {
+        safePosition = nil、
+        restoreFrames = 0、
+        接続 = nil、
+        safePositionTrain = nil、
+        restoreFramesTrain = 0、
+        connectionTrain = nil、
+    },
+    
+    -- ToyMod Wings 迥ｶ諷�
+    ToyModWings = {
+        パーツ = {}、
+        BodyPositions = {},
+        AlignOrientations = {},
+        OriginalAnchored = {},
+        接続 = nil、
+        フラップタイム = 0、
+        LastPos = nil、
+        TargetCFrames = {}
+    },
+    
+    -- BringAll/KillAll逕ワー
+    cameraAnchor = nil、
+    originalCameraSubject = nil、
+    freezePart = nil、
+}
+
+-- ============================================
+-- 蝓ｺ譛チャー繝ｦ繝ｼ繝�ぅ繝™繝�ぅ髢「謨ー」
+-- ============================================
+ローカルユーティリティ = {}
+
+function Utility.GetPlayerCharacter()
+    local char = LocalPlayer.Character
+    char と char:FindFirstChild("HumanoidRootPart") と char:FindFirstChildOfClass("Humanoid") が真の場合
+        文字を返す
+    終わり
+終わり
+
+function Utility.GetPlayerRootPart()
+    local char = Utility.GetPlayerCharacter()
+    return char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
+終わり
+
+function Utility.GetPlayerCFrame()
+    local root = Utility.GetPlayerRootPart()
+    ルートとルート.CFrameを返します。
+終わり
+
+function Utility.getHum(char)
+    return char and char:FindFirstChildOfClass("Humanoid")
+終わり
+
+function Utility.getRoot(char)
+    return char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
+終わり
+
+function Utility.waitForChild(parent, childName, timeout)
+    local startTime = tick()
+    while tick() - startTime < timeout do
+        local child = parent:FindFirstChild(childName)
+        もし子供が
+            子を返す
+        終わり
+        タスクを待機(0.1)
+    終わり
+    nil を返す
+終わり
+
+-- ============================================
+-- FTAP Grab 陬懷勧髢「謨ー」
+-- ============================================
+ローカルFTAP = {}
+
+function FTAP.SetNetworkOwner(part, cf)
+    もしパートでないか、パート.Parentでない場合は、end を返します。
+    pcall(function()
+        setNetworkOwnerEvent:FireServer(part, cf または Utility.GetPlayerCFrame())
+    終わり）
+終わり
+
+function FTAP.Velocity(part, vel)
+    一部でない場合は終了を返す
+    local bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+    bv.速度 = vel
+    bv.Parent = パーツ
+    残骸:AddItem(bv, 1.2)
+終わり
+
+function FTAP.DestroyGrabLine(part)
+    一部でない場合は終了を返す
+    pcall(function()
+        destroyGrabLineEvent:FireServer(part)
+    終わり）
+終わり
+
+-- ============================================
+-- Aura繧ソリ繝 - 陬懷勧髢「謨ー」
+-- ============================================
+local AuraHelper = {}
+
+function AuraHelper.GetNearParts(origin, radius)
+    return Workspace:GetPartBoundsInRadius(origin, radius)
+終わり
+
+function AuraHelper.Velocity(part, value)
+    local b = Instance.new("BodyVelocity")
+    b.MaxForce = Vector3.one * math.huge
+    b.速度 = 値
+    b.親 = パーツ
+    残骸:AddItem(b, 1)
+終わり
+
+function AuraHelper.MoveTo(part, x)
+    for _, v in ipairs(part.Parent:GetDescendants()) do
+        v:IsA("BasePart") の場合
+            v.CanCollide = false
+        終わり
+    終わり
+    local pos = typeof(x) == "CFrame" and x.Position or x
+    local b = Instance.new("BodyPosition")
+    b.MaxForce = Vector3.one * math.huge
+    b.位置 = pos
+    bP = 2e4
+    bD = 5e3
+    b.親 = パーツ
+    タスク.spawn(function()
+        b.ReachedTarget:Wait()
+        pcall(game.Destroy, b)
+        for _, v in ipairs(part.Parent:GetDescendants()) do
+            v:IsA("BasePart") の場合
+                v.CanCollide = true
+            終わり
+        終わり
+    終わり）
+終わり
+
+function AuraHelper.SpawnToy(name, cframe)
+    ローカル成功、おもちゃ = pcall(function()
+        return SpawnToyRF:InvokeServer(name, cframe, Vector3.zero)
+    終わり）
+    成功した場合
+        おもちゃを返す
+    終わり
+    nil を返す
+終わり
+
+関数 AuraHelper.IsFriend(プレイヤー)
+    プレイヤーでない場合、またはプレイヤーのユーザーIDでない場合、またはローカルプレイヤーでない場合は、falseを返します。
+    return LocalPlayer:IsFriendsWith(player.UserId)
+終わり
+
+-- ============================================
+-- 繧ー繝ｩ繝悶ち繝匁ｩ溯。
+-- ============================================
+local GrabFeature = {}
+
+-- 蜉帙�蠑キ蛹�
+function GrabFeature.onGrabPartAdded_ThrowStrength(model)
+    if model.Name ~= "GrabParts" then return end
+    
+    Settings.Grab.EnableThrowStrength が満たされていない場合は、終了する。
+    
+    タスクを待機(0.1)
+    local grabPart = model:FindFirstChild("GrabPart")
+    grabPart でない場合は、end を返します。
+    local weld = grabPart:FindFirstChildOfClass("WeldConstraint")
+    溶接されていない場合、または溶接されていない場合は、終了を返します。
+    local partToImpulse = weld.Part1
+    partToImpulse:IsA("BasePart") でない場合は、end を返します。
+
+    local velocityObj = Instance.new("BodyVelocity")
+    velocityObj.MaxForce = Vector3.zero
+    velocityObj.Velocity = Vector3.zero
+    速度Obj.P = 2000
+    velocityObj.Name = "ThrowForce"
+    velocityObj.Parent = partToImpulse
+
+    ローカル接続
+    conn = model:GetPropertyChangedSignal("Parent"):Connect(function()
+        if not model.Parent then
+            local lastInput = UserInputService:GetLastInputType()
+            lastInput == Enum.UserInputType.MouseButton2 または lastInput == Enum.UserInputType.Touch の場合
+                Settings.Grab.EnableThrowStrength が真の場合、
+                    velocityObj.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    velocityObj.Velocity = Workspace.CurrentCamera.CFrame.LookVector * Settings.Grab.strength
+                    デブリ:AddItem(velocityObj, 1)
+                それ以外
+                    velocityObj:Destroy()
+                終わり
+            それ以外
+                velocityObj:Destroy()
+            終わり
+            conn の場合、conn:Disconnect() を実行します。
+        終わり
+    終わり）
+終わり
+
+function GrabFeature.enableStrength()
+    Settings.Grab.EnableThrowStrength = true
+    State.connections.strength が真の場合、State.connections.strength:Disconnect() を実行します。
+    State.connections.strength = Workspace.ChildAdded:Connect(GrabFeature.onGrabPartAdded_ThrowStrength)
+終わり
+
+関数 GrabFeature.disableStrength()
+    Settings.Grab.EnableThrowStrength = false
+    State.connections.strength の場合
+        状態.接続強度:切断()
+        状態.接続強度 = nil
+    終わり
+終わり
+
+-- Void/Death/Kick Grab逕認定繝阪ャ繝医Ρ繝ｼ繧ッ邯キュー謖。
+function GrabFeature.maintainNetworkOwnership(grabModel, grabbedPart)
+    State.GrabMaintainConnections[grabModel] の場合、
+        State.GrabMaintainConnections[grabModel]:Disconnect()
+        State.GrabMaintainConnections[grabModel] = nil
+    終わり
+
+    local conn = RunService.Heartbeat:Connect(function()
+        grabModel.Parent でない場合、または grabbedPart.Parent でない場合、
+            State.GrabMaintainConnections[grabModel] の場合、
+                State.GrabMaintainConnections[grabModel]:Disconnect()
+                State.GrabMaintainConnections[grabModel] = nil
+            終わり
+            戻る
+        終わり
+
+        FTAP.SetNetworkOwner(grabbedPart)
+        FTAP.SetNetworkOwner(grabbedPart, Utility.GetPlayerCFrame())
+
+        Settings.Grab.VoidGrab の場合
+            FTAP.Velocity(grabbedPart, Vector3.new(0, 12000, 0))
+        終わり
+    終わり）
+
+    State.GrabMaintainConnections[grabModel] = conn
+終わり
+
+function GrabFeature.onGrabPartsAdded_FTAP(model)
+    if model.Name ~= "GrabParts" or not model:IsA("Model") then return end
+
+    local grabPart = model:WaitForChild("GrabPart", 8)
+    grabPart でない場合は、end を返します。
+
+    local weld = grabPart:FindFirstChild("WeldConstraint")
+    溶接されていない場合、または溶接されていない場合は、終了を返します。
+
+    local grabbedPart = weld.Part1
+    掴んだパーツがアンカーされている場合は、終了を返します。
+
+    local victimChar = grabbedPart.Parent
+    犠牲者キャラクターでない場合は、終了して戻る
+
+    local victimPlayer = Players:GetPlayerFromCharacter(victimChar)
+    被害者プレイヤーでない場合は、終了して戻る
+
+    local anySpecialEnabled = Settings.Grab.VoidGrab or Settings.Grab.DeathGrab or Settings.Grab.KickGrab or Settings.Grab.NoclipGrab
+
+    もし anySpecialEnabled でない場合
+        戻る
+    終わり
+
+    タスクを待機(0.07)
+
+    _ = 1, 6 について、
+        FTAP.SetNetworkOwner(grabbedPart)
+        タスクを待機(0.04)
+    終わり
+
+    GrabFeature.maintainNetworkOwnership(model, grabbedPart)
+
+    Settings.Grab.VoidGrab の場合
+        FTAP.Velocity(grabbedPart, Vector3.new(0, 14000, 0))
+        タスク.delay(2.0, function()
+            grabbedPart と grabbedPart.Parent が揃うと、
+                FTAP.DestroyGrabLine(grabbedPart)
+            終わり
+        終わり）
+    終わり
+
+    Settings.Grab.DeathGrab の場合
+        local hum = Utility.getHum(victimChar)
+        もしハムならば
+            hum.Health = 0
+            hum:ChangeState(Enum.HumanoidStateType.Dead)
+            タスク.delay(0.3, function()
+                grabbedPart と grabbedPart.Parent が揃うと、
+                    FTAP.DestroyGrabLine(grabbedPart)
+                終わり
+            終わり）
+        終わり
+    終わり
+
+    Settings.Grab.KickGrab の場合
+        タスク.spawn(function()
+            タスクを待機(0.55)
+            グラッブドパートでない場合、またはグラッブドパートの親でない場合は、終了する。
+
+            local victimRoot = Utility.getRoot(victimChar)
+            犠牲者ルートでない場合は、終了を返す
+
+            local myRoot = Utility.GetPlayerRootPart()
+            if not myRoot then return end
+
+            local oldPos = myRoot.CFrame
+
+            victimRoot と victimRoot.Parent が
+                local hum = Utility.getHum(victimChar)
+                hum と hum.FloorMaterial が Enum.Material.Air と等しくない場合、
+                    myRoot.CFrame = victimRoot.CFrame * CFrame.new(0, 3, 0)
+                    task.wait(0.14)
+
+                    FTAP.SetNetworkOwner(victimRoot)
+                    タスクを待機(0.1)
+
+                    local extremePos = CFrame.new(2.5e25, 2.5e25, 2.5e25)
+                    local bp = Instance.new("BodyPosition")
+                    bp.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    bp.Position = extremePos.Position
+                    bp.P = 25000
+                    bp.D = 6000
+                    bp.Parent = victimRoot
+
+                    FTAP.Velocity(victimRoot, Vector3.new(0, 1e6, 0) + victimRoot.AssemblyLinearVelocity * 1e6)
+
+                    タスクを待機(0.28)
+
+                    victimRoot と victimRoot.Parent が一致する場合、
+                        FTAP.DestroyGrabLine(victimRoot)
+                    終わり
+
+                    myRoot.CFrame = oldPos
+                    bp:Destroy()
+                    壊す
+                終わり
+                タスクを待機(0.04)
+            終わり
+        終わり）
+    終わり
+終わり
+
+-- ノークリップグラブ
+function GrabFeature.noclipGrab()
+    State.noclipRunning = true
+    while State.noclipRunning do
+        ローカル成功、err = pcall(function()
+            local grabModel = Workspace:FindFirstChild("GrabParts")
+            grabModel と grabModel.Name が "GrabParts" の場合
+                local grabPart = grabModel:FindFirstChild("GrabPart")
+                grabPart でない場合は、end を返します。
+
+                local weld = grabPart:FindFirstChildOfClass("WeldConstraint")
+                溶接されていない場合、または溶接されていない場合は、終了を返します。
+
+                local grabbedPart = weld.Part1
+                ローカル文字 = grabbedPart.Parent
+                キャラクターとキャラクター:FindFirstChild("HumanoidRootPart")の場合
+                    Workspace:FindFirstChild("GrabParts") が完了するまで、
+                        for _, part in pairs(character:GetChildren()) do
+                            パーツが「BasePart」である場合
+                                part.CanCollide = false
+                            終わり
+                        終わり
+                        タスクを待機します
+                    終わり
+                    for _, part in pairs(character:GetChildren()) do
+                        パーツが「BasePart」である場合
+                            part.CanCollide = true
+                        終わり
+                    終わり
+                終わり
+            それ以外
+                タスクを待機します
+            終わり
+        終わり）
+        成功しない場合は
+            warn("noclipGrab エラー: ".. tostring(err))
+            タスクを待機(1)
+        終わり
+        タスクを待機します
+    終わり
+終わり
+
+関数 GrabFeature.stopNoclip()
+    State.noclipRunning = false
+    State.loops.noclip の場合、
+        task.cancel(State.loops.noclip)
+        State.loops.noclip = nil
+    終わり
+終わり
+
+function GrabFeature.toggleNoclip(enabled)
+    有効になっている場合
+        State.loops.noclip の場合、
+            task.cancel(State.loops.noclip)
+        終わり
+        State.loops.noclip = task.spawn(GrabFeature.noclipGrab)
+    それ以外
+        GrabFeature.stopNoclip()
+    終わり
+終わり
+
+-- ============================================
+-- 繧「繝ウー繝√ち繝匁ｩ溯」
+-- ============================================
+ローカル AntiFeature = {}
+
+-- 「繝ウー繝√ゲ繝ｩ繝」 v1
+function AntiFeature.setupAntiGrabV1()
+    isHeldValue.Changed:Connect(function(isBeingHeld)
+        isBeingHeld かつ Settings.Anti.AntiGrab の場合、
+            local hrp = (LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart")
+            ローカル接続
+            conn = RunService.Heartbeat:Connect(function()
+                isHeldValue.Value の場合
+                    hrp.Velocity = Vector3.new()
+                    hrp.Anchored = true
+                    struggleEvent:FireServer(LocalPlayer)
+                    ragdollRemoteEvent:FireServer(hrp, 0)
+                それ以外
+                    hrp.Velocity = Vector3.new()
+                    hrp.Anchored = false
+                    conn:Disconnect()
+                終わり
+            終わり）
+        終わり
+    終わり）
+終わり
+
+-- 「繝ウー繝√ゲ繝ｩ繝」v2
+function AntiFeature.startStruggleLoop()
+    local char = LocalPlayer.Character
+    if not char or State.struggleTasks[char] then return end
+    State.struggleTasks[char] = true
+    タスク.spawn(function()
+        State.struggleTasks[char] が完了するまで、
+            local head = char:FindFirstChild("Head")
+            head と head:FindFirstChild("PartOwner") および isHeldValue.Value の場合、
+                pcall(function()
+                    struggleEvent:FireServer()
+                    local gce = ReplicatedStorage:FindFirstChild("GameCorrectionEvents")
+                    gce の場合
+                        local sav = gce:FindFirstChild("StopAllVelocity")
+                        if sav then sav:FireServer() end
+                    終わり
+                終わり）
+            それ以外
+                State.struggleTasks[char] = nil
+                壊す
+            終わり
+            タスクを待機(0.1)
+        終わり
+    終わり）
+終わり
+
+function AntiFeature.enableAntiGrabSolaris()
+    State.connections.antiGrab が真の場合、State.connections.antiGrab:Disconnect() を実行します。
+    State.connections.antiGrab = RunService.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        char と char:FindFirstChild("Head") が一致する場合
+            local head = char.Head
+            もし head:FindFirstChild("PartOwner") かつ isHeldValue.Value ならば
+                AntiFeature.startStruggleLoop()
+            終わり
+        終わり
+    終わり）
+終わり
+
+function AntiFeature.disableAntiGrabSolaris()
+    State.connections.antiGrab の場合、
+        State.connections.antiGrab:Disconnect()
+        State.connections.antiGrab = nil
+    終わり
+    for k in pairs(State.struggleTasks) do
+        State.struggleTasks[k] = nil
+    終わり
+終わり
+
+-- 「警告」
+ローカルのantiExplosionConnection = nil
+
+function AntiFeature.setupAntiExplosion(character)
+    local humanoid = character:WaitForChild("Humanoid", 5)
+    人型でない場合は、終了する。
+    local ragdolled = humanoid:FindFirstChild("Ragdolled")
+    ラグドール化されていない場合は終了を返す
+
+    antiExplosionConnection の場合
+        antiExplosionConnection:Disconnect()
+    終わり
+
+    antiExplosionConnection = ragdolled:GetPropertyChangedSignal("Value"):Connect(function()
+        ipairs(character:GetChildren()) の _、part について、
+            パーツが「BasePart」である場合
+                part.Anchored = ragdolled.Value
+            終わり
+        終わり
+    終わり）
+終わり
+
+-- アンチキッククナイ
+local kunaiMessageGui = nil
+local kunaiTextLabel = nil
+
+function AntiFeature.createKunaiMessageGui()
+    kunaiMessageGui の場合、終了を返します
+    kunaiMessageGui = Instance.new("ScreenGui")
+    kunaiMessageGui.Name = "KunaiMessageGui"
+    kunaiMessageGui.ResetOnSpawn = false
+    kunaiMessageGui.Parent = PlayerGui
+
+    kunaiTextLabel = Instance.new("TextLabel")
+    kunaiTextLabel.Size = UDim2.new(0, 480, 0, 38)
+    kunaiTextLabel.Position = UDim2.new(0, 16, 1, -60)
+    kunaiTextLabel.AnchorPoint = Vector2.new(0, 1)
+    kunaiTextLabel.BackgroundTransparency = 1
+    クナイテキストラベル.TextColor3 = Color3.fromRGB(255, 240, 120)
+    kunaiTextLabel.Font = Enum.Font.Code
+    kunaiTextLabel.TextSize = 18
+    kunaiTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    クナイテキストラベル.TextTransparency = 1
+    kunaiTextLabel.RichText = true
+    kunaiTextLabel.Parent = kunaiMessageGui
+終わり
+
+local fadeInInfo = TweenInfo.new(0.3, Enum.EasingStyle.Linear)
+local fadeOutInfo = TweenInfo.new(0.6, Enum.EasingStyle.Linear)
+
+function AntiFeature.typeKunaiMessage(msg, charDelay)
+    charDelay = charDelay または 0.038
+    kunaiTextLabel でない場合は AntiFeature.createKunaiMessageGui() を実行します。
+    kunaiTextLabel.Text = ""
+    TweenService:Create(kunaiTextLabel, fadeInInfo, {TextTransparency = 0}):Play()
+
+    タスク.spawn(function()
+        for i = 1, #msg do
+            kunaiTextLabel.Text = msg:sub(1, i)
+            タスクを待機(charDelay)
+        終わり
+        タスクを待機(2.5)
+        TweenService:Create(kunaiTextLabel, fadeOutInfo, {TextTransparency = 1}):Play()
+    終わり）
+終わり
+
+function AntiFeature.getRightLeg(char)
+    return char:FindFirstChild("右脚")
+        または char:FindFirstChild("RightFoot")
+        または char:FindFirstChild("RightLowerLeg")
+        または char:FindFirstChild("RightUpperLeg")
+終わり
+
+function AntiFeature.cleanupMyKunaiToys()
+    おもちゃフォルダ内に生成されていない場合は、終了する
+    ipairs(spawnedInToysFolder:GetChildren()) 内の _、toy に対して、
+        もし toy.Name が "NinjaKunai" ならば
+            pcall(function()
+                DeleteToyRE:FireServer(toy)
+            終わり）
+        終わり
+    終わり
+終わり
+
+function AntiFeature.attachKunai(isReattach)
+    AntiFeature.cleanupMyKunaiToys()
+    local char = Utility.GetPlayerCharacter()
+    文字でない場合は、終了を返します。
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    hrpでない場合は、終了を返す
+    local rightLeg = AntiFeature.getRightLeg(char)
+    if not rightLeg then return end
+
+    local spawnCFrame = hrp.CFrame * CFrame.new(0, 0, -3.5)
+
+    タスク.spawn(function()
+        pcall(function()
+            SpawnToyRF:InvokeServer("NinjaKunai", spawnCFrame, Vector3.new(0, 0, 0))
+        終わり）
+    終わり）
+
+    タスクを待機(0.1)
+
+    ローカルクナイ = nil
+    i = 1, 15 について、
+        kunai = spawnedInToysFolder:FindFirstChild("NinjaKunai")
+        kunai と kunai:FindFirstChild("StickyPart") が存在する場合、break を実行します。
+        タスクを待機(0.05)
+    終わり
+
+    クナイでない場合、またはクナイでない場合:FindFirstChild("StickyPart") ならば
+        isReattachでない場合
+            タスク.delay(0.3, function()
+                Settings.Anti.AntiKickKunai の場合、AntiFeature.attachKunai(true) を実行します。
+            終わり）
+        終わり
+        戻る
+    終わり
+
+    local sticky = kunai.StickyPart
+
+    i = 1, 25 について、
+        タスク.spawn(function()
+            pcall(function()
+                local randOffset = CFrame.new(
+                    math.random(-10,10)/100、
+                    math.random(-10,10)/100、
+                    math.random(-8,8)/100
+                ）
+                setNetworkOwnerEvent:FireServer(sticky, rightLeg.CFrame * randOffset)
+            終わり）
+        終わり）
+    終わり
+
+    local attachCFrame = CFrame.new(0.04, 0.48, 0.02) * CFrame.Angles(0, math.rad(1), math.rad(-90))
+
+    i = 1, 20 について、
+        タスク.spawn(function()
+            pcall(function()
+                StickyPartEvent:FireServer(sticky, rightLeg, attachCFrame)
+            終わり）
+        終わり）
+    終わり
+
+    タスク.spawn(function()
+        for _, v in kunai:GetDescendants() do
+            v:IsA("BasePart") の場合
+                v.透明度 = 0.7
+            elseif v:IsA("Decal") or v:IsA("Texture") then
+                v.透明度 = 0.7
+            終わり
+        終わり
+    終わり）
+
+    State.currentKunai = kunai
+終わり
+
+function AntiFeature.isKunaiAttached()
+    Settings.Anti.AntiKickKunai でない場合は false を返す。
+    おもちゃフォルダ内に生成されていない場合は、false を返す。
+
+    ローカルクナイ = nil
+    for _, obj in spawnedInToysFolder:GetChildren() do
+        if obj.Name == "NinjaKunai" then kunai = obj break end
+    終わり
+
+    kunai でない場合、または kunai:FindFirstChild("StickyPart") でない場合は false を返します。
+
+    local leg = AntiFeature.getRightLeg(Utility.GetPlayerCharacter())
+    もし脚でなければ、falseを返す。
+
+    local dist = (kunai.StickyPart.Position - leg.Position).Magnitude
+    距離が7未満の場合に返します
+終わり
+
+-- 粘着防止
+function AntiFeature.setTouchQuery(state)
+    local char = Workspace:FindFirstChild(LocalPlayer.Name)
+    文字でない場合は、終了を返します。
+    ipairs(char:GetChildren()) 内の _、v について、
+        v:IsA("Part") または v:IsA("BasePart") の場合
+            v.CanTouch = 状態
+            v.CanQuery = state
+        終わり
+    終わり
+終わり
+
+-- アンチペイント
+function AntiFeature.deleteAllPaintParts()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        obj:IsA("BasePart") かつ obj.Name == "PaintPlayerPart" の場合
+            ローカルクローン = obj:Clone()
+            clone.Archivable = true
+            State.paintPartsBackup[obj:GetDebugId()] = {
+                クローン = クローン、
+                parent = obj.Parent
+            }
+            obj:Destroy()
+        終わり
+    終わり
+終わり
+
+function AntiFeature.restorePaintParts()
+    for _, data in pairs(State.paintPartsBackup) do
+        データ.クローンとデータ.親が揃う場合、
+            data.clone.Parent = data.parent
+        終わり
+    終わり
+    State.paintPartsBackup = {}
+終わり
+
+function AntiFeature.watchNewPaintParts()
+    table.insert(State.paintConnections, Workspace.DescendantAdded:Connect(function(obj)
+        obj:IsA("BasePart") かつ obj.Name == "PaintPlayerPart" の場合
+            タスク.defer(function()
+                obj と obj.Parent が揃う場合、
+                    ローカルクローン = obj:Clone()
+                    clone.Archivable = true
+                    State.paintPartsBackup[obj:GetDebugId()] = {
+                        クローン = クローン、
+                        parent = obj.Parent
+                    }
+                    obj:Destroy()
+                終わり
+            終わり）
+        終わり
+    終わり））
+終わり
+
+function AntiFeature.disconnectWatchers()
+    for _, conn in ipairs(State.paintConnections) do
+        conn.Connected の場合
+            conn:Disconnect()
+        終わり
+    終わり
+    State.paintConnections = {}
+終わり
+
+-- アンチ・グッチ（ブロブマン）
+function AntiFeature.spawnBlobman()
+    ローカル引数 = {
+        [1] = "クリーチャーブロブマン",
+        [2] = CFrame.new(0, 5000000, 0),
+        [3] = Vector3.new(0, 60, 0)
+    }
+    pcall(function()
+        ReplicatedStorage.MenuToys.SpawnToyRemoteFunction:InvokeServer(unpack(args))
+    終わり）
+    ローカルフォルダ = Workspace:WaitForChild(LocalPlayer.Name .. "SpawnedInToys", 5)
+    フォルダとフォルダ:FindFirstChild("CreatureBlobman")の場合
+        ローカルブロブ = folder.CreatureBlobman
+        blob:FindFirstChild("Head") の場合
+            blob.Head.CFrame = CFrame.new(0, 50000, 0)
+            blob.Head.Anchored = true
+        終わり
+    終わり
+終わり
+
+function AntiFeature.startAntiGucci()
+    ローカル文字 = LocalPlayer.Character または LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    State.antiGucci.safePosition = rootPart.Position
+    
+    ローカルフォルダ = Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+    ローカルブロブ = フォルダー、フォルダー:FindFirstChild("CreatureBlobman")
+    ローカルシート = blob および blob:FindFirstChild("VehicleSeat")
+    
+    ブロブでない場合は
+        AntiFeature.spawnBlobman()
+        タスクを待機(1)
+        フォルダー = Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+        blob = フォルダーとフォルダー:FindFirstChild("CreatureBlobman")
+        seat = blob かつ blob:FindFirstChild("VehicleSeat")
+    終わり
+    
+    座席があり、かつ座席が「VehicleSeat」である場合、
+        rootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
+        座席:座る(人型)
+    終わり
+    
+    humanoid:GetPropertyChangedSignal("Jump"):Connect(function()
+        人型生物がジャンプし、かつ人型生物が座る場合
+            State.antiGucci.restoreFrames = 15
+            State.antiGucci.safePosition = rootPart.Position
+        終わり
+    終わり）
+    
+    State.antiGucci.connection の場合、
+        状態.antiGucci.接続:切断()
+    終わり
+    
+    State.antiGucci.connection = RunService.Heartbeat:Connect(function()
+        rootPart でない場合、または人間型でない場合
+            戻る
+        終わり
+        
+        local beingHeld = LocalPlayer:FindFirstChild("IsHeld")
+        beingHeld でない場合、または beingHeld.Value でない場合、
+            ReplicatedStorage.CharacterEvents.RagdollRemote:FireServer(rootPart, 0)
+        終わり
+        
+        local blobFolder = Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+        local currentBlob = blobFolder and blobFolder:FindFirstChild("CreatureBlobman")
+        currentBlob かつ currentBlob:FindFirstChild("Head") の場合、
+            currentBlob.Head.CFrame = CFrame.new(0, 50000, 0)
+            currentBlob.Head.Anchored = true
+        終わり
+        
+        State.antiGucci.restoreFrames > 0 の場合
+            rootPart.CFrame = CFrame.new(State.antiGucci.safePosition)
+            State.antiGucci.restoreFrames = State.antiGucci.restoreFrames - 1
+        終わり
+    終わり）
+    
+    タスク.spawn(function()
+        人型である間、座る。
+            タスクを待機(1)
+        終わり
+        タスクを待機(0.5)
+        rootPart.CFrame = CFrame.new(State.antiGucci.safePosition)
+    終わり）
+終わり
+
+function AntiFeature.stopAntiGucci()
+    State.antiGucci.connection の場合、
+        状態.antiGucci.接続:切断()
+        State.antiGucci.connection = nil
+    終わり
+    
+    ローカルキャラクター = LocalPlayer.Character
+    文字の場合
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChild("Humanoid")
+        rootPart と State.antiGucci.safePosition が一致する場合、
+            rootPart.CFrame = CFrame.new(State.antiGucci.safePosition)
+        終わり
+        人型であれば
+            humanoid.Sit = false
+        終わり
+    終わり
+    
+    タスクを待機(0.1)
+    local blobFolder = Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+    blobFolder と blobFolder:FindFirstChild("CreatureBlobman") が真の場合
+        pcall(function()
+            ReplicatedStorage.MenuToys.DestroyToy:FireServer(blobFolder.CreatureBlobman)
+        終わり）
+    終わり
+終わり
+
+-- アンチ・グッチ（トレイン）
+function AntiFeature.startAntiGucciTrain()
+    ローカル文字 = LocalPlayer.Character または LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    State.antiGucci.safePositionTrain = rootPart.Position
+    
+    ローカルフォルダ = workspace.Map.AlwaysHereTweenedObjects
+    local train = folder and folder:FindFirstChild("Train")
+    地元議席
+    
+    列車の場合
+        for _, d in ipairs(train:GetDescendants()) do
+            d:IsA("Seat") の場合
+                座席 = d
+                壊す
+            終わり
+        終わり
+    終わり
+    
+    座席があれば
+        rootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
+        座席:座る(人型)
+    終わり
+    
+    humanoid:GetPropertyChangedSignal("Jump"):Connect(function()
+        人型生物がジャンプし、かつ人型生物が座る場合
+            State.antiGucci.restoreFramesTrain = 15
+            State.antiGucci.safePositionTrain = rootPart.Position
+        終わり
+    終わり）
+    
+    State.antiGucci.connectionTrain の場合、
+        状態.antiGucci.connectionTrain:Disconnect()
+    終わり
+    
+    State.antiGucci.connectionTrain = RunService.Heartbeat:Connect(function()
+        rootPart でない場合、または人間型でない場合
+            戻る
+        終わり
+        ReplicatedStorage.CharacterEvents.RagdollRemote:FireServer(rootPart, 0)
+        State.antiGucci.restoreFramesTrain > 0 の場合
+            rootPart.CFrame = CFrame.new(State.antiGucci.safePositionTrain)
+            State.antiGucci.restoreFramesTrain = State.antiGucci.restoreFramesTrain - 1
+        終わり
+    終わり）
+    
+    タスク.spawn(function()
+        人型である間、座る。
+            タスクを待機(1)
+        終わり
+        タスクを待機(0.5)
+        rootPart.CFrame = CFrame.new(State.antiGucci.safePositionTrain)
+    終わり）
+終わり
+
+function AntiFeature.stopAntiGucciTrain()
+    State.antiGucci.connectionTrain の場合、
+        状態.antiGucci.connectionTrain:Disconnect()
+        State.antiGucci.connectionTrain = nil
+    終わり
+終わり
+
+-- アンチラグドール
+関数 AntiFeature.ragdoll()
+    ローカル引数 = {
+        [1] = LocalPlayer.Character:FindFirstChild("HumanoidRootPart"),
+        [2] = 0
+    }
+    args[1]の場合
+        ReplicatedStorage.CharacterEvents.RagdollRemote:FireServer(unpack(args))
+    終わり
+終わり
+
+-- ============================================
+-- 繝悶Ο繝悶、繝外繝吶、繧魂讖溯。
+-- ============================================
+local BlobmanBetaFeature = {}
+
+function BlobmanBetaFeature.getLocalChar() return LocalPlayer.Character end
+関数 BlobmanBetaFeature.getLocalRoot()
+    BlobmanBetaFeature.getLocalChar() が真でない場合は、終了を返します。
+    BlobmanBetaFeature.getLocalChar():FindFirstChild("HumanoidRootPart") または BlobmanBetaFeature.getLocalChar():FindFirstChild("Torso") を返します。
+終わり
+関数 BlobmanBetaFeature.getLocalHum()
+    BlobmanBetaFeature.getLocalChar() が真でない場合は、終了を返します。
+    return BlobmanBetaFeature.getLocalChar():FindFirstChildOfClass("Humanoid")
+終わり
+関数 BlobmanBetaFeature.getInv()
+    return Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+終わり
+
+function BlobmanBetaFeature.SetNetworkOwner(part)
+    ReplicatedStorage.GrabEvents.SetNetworkOwner:FireServer(part, BlobmanBetaFeature.getLocalRoot().CFrame)
+終わり
+
+function BlobmanBetaFeature.ungrab(part)
+    ReplicatedStorage.GrabEvents.DestroyGrabLine:FireServer(part)
+終わり
+
+function BlobmanBetaFeature.getBlobman()
+    local inv = BlobmanBetaFeature.getInv()
+    もし inv ならば
+        local v = inv:FindFirstChild("CreatureBlobman")
+        v と v.ClassName が "Model" で、v:FindFirstChild("VehicleSeat") の場合、
+            vを返す
+        終わり
+    終わり
+    for _, p in Workspace.PlotItems:GetChildren() do
+        local m = p:FindFirstChild("CreatureBlobman")
+        m と m:FindFirstChild("PlayerValue") および m.PlayerValue.Value == LocalPlayer.Name の場合、
+            mを返す
+        終わり
+    終わり
+    nil を返す
+終わり
+
+function BlobmanBetaFeature.spawnBlobman()
+    ReplicatedStorage.MenuToys.SpawnToyRemoteFunction:InvokeServer("CreatureBlobman", BlobmanBetaFeature.getLocalRoot().CFrame, Vector3.zero)
+    タスクを待機(1.0)
+    return BlobmanBetaFeature.getBlobman()
+終わり
+
+function BlobmanBetaFeature.destroyBlobman()
+    local blob = BlobmanBetaFeature.getBlobman()
+    ブロブの場合
+        ReplicatedStorage.MenuToys.DestroyToy:FireServer(blob)
+    終わり
+終わり
+
+function BlobmanBetaFeature.resetBlobmanPhysics()
+    local blob = BlobmanBetaFeature.getBlobman()
+    ブロブでない場合は、終了を返す
+    for _, part in blob:GetDescendants() do
+        パーツが「BasePart」である場合
+            part.AssemblyLinearVelocity = Vector3.zero
+            part.AssemblyAngularVelocity = Vector3.zero
+        終わり
+    終わり
+終わり
+
+function BlobmanBetaFeature.stabilizeBlobman()
+    local blob = BlobmanBetaFeature.getBlobman()
+    if not blob or not blob:FindFirstChild("VehicleSeat") then return end
+    ローカルシート = blob.VehicleSeat
+    座席があれば
+        seat.CFrame = seat.CFrame + (BlobmanBetaFeature.getLocalRoot().CFrame.Position - seat.Position) * 0.1
+    終わり
+終わり
+
+function BlobmanBetaFeature.isSittingOnBlobman()
+    local hum = BlobmanBetaFeature.getLocalHum()
+    ハムでない場合はfalseを返す。
+    local blob = BlobmanBetaFeature.getBlobman()
+    if not blob or not blob:FindFirstChild("VehicleSeat") then return false end
+    ローカルシート = blob.VehicleSeat
+    return hum.Sit and hum.SeatPart == seat
+終わり
+
+function BlobmanBetaFeature.ensureSitBlobman()
+    local blob = BlobmanBetaFeature.getBlobman()
+    if not blob or not blob:FindFirstChild("VehicleSeat") then return false end
+    ローカルシート = blob.VehicleSeat
+    local hum = BlobmanBetaFeature.getLocalHum()
+    ハミングしてハミングしない場合は、座ってください。
+        座席：座る（ハミング）
+        タスクを待機(0.6)
+    終わり
+    BlobmanBetaFeature.resetBlobmanPhysics()
+    BlobmanBetaFeature.stabilizeBlobman()
+    BlobmanBetaFeature.isSittingOnBlobman() を返す
+終わり
+
+function BlobmanBetaFeature.blobGrab(blob, target, side)
+    ブロブでない場合は、終了を返す
+    ローカル検出器 = blob:FindFirstChild(side .. "Detector")
+    検出器でない場合は、終了を返します。
+    local weld = detector:FindFirstChild(side .. "Weld")
+    溶接しない場合は終了を返す
+    local script = blob:FindFirstChild("BlobmanSeatAndOwnerScript", true)
+    スクリプトでない場合は終了を返す
+    local remote = script:FindFirstChild("CreatureGrab")
+    リモートの場合
+        pcall(function()
+            リモート:FireServer(検出器、ターゲット、溶接)
+        終わり）
+    終わり
+終わり
+
+function BlobmanBetaFeature.blobDrop(blob, target, side)
+    ブロブでない場合は、終了を返す
+    ローカル検出器 = blob:FindFirstChild(side .. "Detector")
+    検出器でない場合は、終了を返します。
+    local script = blob:FindFirstChild("BlobmanSeatAndOwnerScript", true)
+    スクリプトでない場合は終了を返す
+    local remote = script:FindFirstChild("CreatureDrop")
+    リモートの場合
+        pcall(function()
+            リモート:FireServer(検出器、ターゲット)
+        終わり）
+    終わり
+終わり
+
+function BlobmanBetaFeature.blobKick(blob, target, side)
+    BlobmanBetaFeature.blobGrab(blob, BlobmanBetaFeature.getLocalRoot(), side)
+    タスクを待機(0.08)
+    BlobmanBetaFeature.SetNetworkOwner(target)
+    タスクを待機(0.08)
+    target.CFrame = target.CFrame + Vector3.new(0, Settings.BlobmanBeta.FloatAmount, 0)
+    タスクを待機(0.08)
+    BlobmanBetaFeature.ungrab(target)
+    タスクを待機(0.08)
+    BlobmanBetaFeature.blobGrab(blob, target, side)
+    タスクを待機(0.08)
+    BlobmanBetaFeature.blobDrop(blob, target, side)
+    タスクを待機(0.08)
+    BlobmanBetaFeature.ungrab(target)
+終わり
+
+関数 BlobmanBetaFeature.ensureBlob()
+    local blob = BlobmanBetaFeature.getBlobman()
+    if not blob then blob = BlobmanBetaFeature.spawnBlobman() end
+    local hum = BlobmanBetaFeature.getLocalHum()
+    ハミングしてハミングしない場合は、座ってください。
+        blob.VehicleSeat:Sit(hum)
+        タスクを待機(0.22)
+    終わり
+    return BlobmanBetaFeature.getBlobman()
+終わり
+
+関数 BlobmanBetaFeature.GetPlayerList()
+    ローカルリスト = {}
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then table.insert(list, plr.Name) end
+    終わり
+    リストを返す
+終わり
+
+関数 BlobmanBetaFeature.checkTarget()
+    Settings.BlobmanBeta.selectedTarget でない場合
+        OrionLib:MakeNotification({Name = "エラー", Content = "ターゲットを選択してください", Time = 3})
+        falseを返す
+    終わり
+    local target = Players:FindFirstChild(Settings.BlobmanBeta.selectedTarget)
+    ターゲットでない場合は
+        OrionLib:MakeNotification({Name = "エラー", Content = "ターゲットが見つかりません", Time = 3})
+        falseを返す
+    終わり
+    ターゲットを返す
+終わり
+
+-- ============================================
+-- PvP 繝匁ｩ溯
+-- ============================================
+ローカル PvPFeature = {}
+
+function PvPFeature.UpdateCharacter(NewCharacter)
+    (NewCharacter かつ NewCharacter:IsDescendantOf(workspace)) でない場合、終了する。
+    
+    状態.文字 = 新しい文字
+    State.Humanoid = State.Character:WaitForChild("Humanoid", 3)
+    State.Root = State.Character:WaitForChild("HumanoidRootPart", 3)
+    
+    local CurrentReach = LocalPlayer:FindFirstChild("CurrentReach")
+    CurrentReach の場合
+        State.ReachDistance = 現在のReach.Value
+    終わり
+    
+    State.HRPs[State.Root] = nil
+終わり
+
+function PvPFeature.IsPlayerTarget(HRP)
+    HRPでない場合、またはHRP.Parentでない場合はfalseを返す。
+    
+    ローカルモデル = HRP.Parent
+    for _, player in pairs(Players:GetPlayers()) do
+        player.Character == Model かつ player ~= LocalPlayer の場合、
+            trueを返す
+        終わり
+    終わり
+    falseを返す
+終わり
+
+function PvPFeature.GetTarget()
+    Settings.PvP.SilentAimEnabled が有効でない場合は nil を返す。
+    State.CameraClone でない場合、または State.Root でない場合は nil を返す。
+    
+    local Center = Camera.ViewportSize / 2
+    ローカル距離 = math.huge
+    ローカルターゲット = nil
+    
+    local MaxScreenDistance = (Camera.ViewportSize.X + Camera.ViewportSize.Y) / 2
+    local AdjustedStrength = (Settings.PvP.AimStrength / 100) * MaxScreenDistance
+    
+    for HRP in pairs(State.HRPs) do
+        HRP と HRP.Parent と HRP が State.Root と等しくなく、HRP:IsDescendantOf(workspace) の場合、
+            ローカルモデル = HRP.Parent
+            local TargetHumanoid = Model:FindFirstChildWhichIsA("Humanoid")
+            TargetHumanoid かつ TargetHumanoid.Health > 0 の場合
+                local Screen3D, OnScreen = Camera:WorldToScreenPoint(HRP.Position)
+                
+                画面上に表示されている場合
+                    local Magnitude = (HRP.Position - State.CameraClone.CFrame.Position).Magnitude
+                    
+                    Magnitude <= State.ReachDistance の場合、
+                        local Screen2D = Vector2.new(Screen3D.X, Screen3D.Y)
+                        local ScreenDistance = (Screen2D - Center).Magnitude
+                        
+                        ScreenDistance <= AdjustedStrength の場合、
+                            ScreenDistance < Distance の場合
+                                距離 = スクリーン距離
+                                ターゲット = HRP
+                            終わり
+                        終わり
+                    終わり
+                終わり
+            終わり
+        終わり
+    終わり
+    
+    ターゲットを返す
+終わり
+
+function PvPFeature.GetAutoGrabTarget()
+    Settings.PvP.AutoGrabEnabled が有効でない場合は nil を返す。
+    Camera でない場合、または State.Root でない場合は nil を返す。
+    
+    local Center = Camera.ViewportSize / 2
+    ローカル距離 = math.huge
+    ローカルターゲット = nil
+    
+    local MaxScreenDistance = (Camera.ViewportSize.X + Camera.ViewportSize.Y) / 2
+    local AdjustedStrength = (Settings.PvP.AimStrength / 100) * MaxScreenDistance
+    
+    for HRP in pairs(State.HRPs) do
+        HRP と HRP.Parent と HRP が State.Root と等しくなく、HRP:IsDescendantOf(workspace) の場合、
+            PvPFeature.IsPlayerTarget(HRP) の場合
+                ローカルモデル = HRP.Parent
+                local TargetHumanoid = Model:FindFirstChildWhichIsA("Humanoid")
+                
+                TargetHumanoid かつ TargetHumanoid.Health > 0 の場合
+                    HRP == State.LastGrabbedTarget かつ tick() - State.LastGrabbedTime < 0.5 の場合、
+                        続く
+                    終わり
+                    
+                    local Screen3D, OnScreen = Camera:WorldToScreenPoint(HRP.Position)
+                    
+                    画面上に表示されている場合
+                        local Magnitude = (HRP.Position - Camera.CFrame.Position).Magnitude
+                        
+                        Magnitude <= State.ReachDistance の場合、
+                            local Screen2D = Vector2.new(Screen3D.X, Screen3D.Y)
+                            local ScreenDistance = (Screen2D - Center).Magnitude
+                            
+                            ScreenDistance <= AdjustedStrength * 0.9 の場合
+                                ScreenDistance < Distance の場合
+                                    距離 = スクリーン距離
+                                    ターゲット = HRP
+                                終わり
+                            終わり
+                        終わり
+                    終わり
+                終わり
+            終わり
+        終わり
+    終わり
+    
+    ターゲットを返す
+終わり
+
+-- ============================================
+-- 繝励Ξ繧､繝､繝ｼ繧繝匁ｩ溯。
+-- ============================================
+local PlayerFeature = {}
+
+function PlayerFeature.enableWalkspeed()
+    State.connections.walkspeed が真の場合、State.connections.walkspeed:Disconnect() を実行します。
+    State.connections.walkspeed = RunService.Stepped:Connect(function()
+        local char = Utility.GetPlayerCharacter()
+        文字の場合
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            hrpとヒューマノイドの場合
+                hrp.CFrame = hrp.CFrame + humanoid.MoveDirection * (16 * Settings.Player.WalkspeedValue / 10)
+            終わり
+        終わり
+    終わり）
+終わり
+
+関数 PlayerFeature.disableWalkspeed()
+    State.connections.walkspeed の場合
+        状態.接続.歩行速度:切断()
+        状態.接続.歩行速度 = nil
+    終わり
+終わり
+
+function PlayerFeature.saveOriginalJumpSettings()
+    local char = Utility.GetPlayerCharacter()
+    文字の場合
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        人型であれば
+            State.originalJump.UseJumpPower = humanoid.UseJumpPower
+            ヒューマノイドがジャンプパワーを使用する場合
+                State.originalJump.JumpPower = humanoid.JumpPower
+            それ以外
+                State.originalJump.JumpHeight = humanoid.JumpHeight
+            終わり
+        終わり
+    終わり
+終わり
+
+function PlayerFeature.restoreOriginalJumpSettings()
+    local char = Utility.GetPlayerCharacter()
+    文字の場合
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        人型であれば
+            State.originalJump.UseJumpPowerがnilでない場合
+                humanoid.UseJumpPower = State.originalJump.UseJumpPower
+            終わり
+            State.originalJump.JumpPower の場合
+                humanoid.JumpPower = State.originalJump.JumpPower
+            終わり
+            State.originalJump.JumpHeight の場合、
+                humanoid.JumpHeight = State.originalJump.JumpHeight
+            終わり
+        終わり
+    終わり
+終わり
+
+関数 PlayerFeature.enableInfiniteJump()
+    PlayerFeature.saveOriginalJumpSettings()
+    State.connections.infiniteJump が真の場合、State.connections.infiniteJump:Disconnect() を実行します。
+    State.connections.infiniteJump = UserInputService.JumpRequest:Connect(function()
+        local char = Utility.GetPlayerCharacter()
+        文字の場合
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            人型であれば
+                ヒューマノイド:ChangeState(Enum.HumanoidStateType.Freefall)
+                タスクを待機します
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                人型でない場合は、UseJumpPower を使用します。
+                    humanoid.JumpHeight = math.clamp(Settings.Player.InfiniteJumpPower / 10, 7.2, 50)
+                それ以外
+                    humanoid.JumpPower = Settings.Player.InfiniteJumpPower
+                終わり
+            終わり
+        終わり
+    終わり）
+終わり
+
+function PlayerFeature.disableInfiniteJump()
+    State.connections.infiniteJump の場合
+        状態.接続.無限ジャンプ:切断()
+        State.connections.infiniteJump = nil
+    終わり
+    PlayerFeature.restoreOriginalJumpSettings()
+終わり
+
+-- ============================================
+-- ループ繧湝匁ｩ溯��KillAll/BringAll/TargetKill邨ア蜷茨志。
+-- ============================================
+ローカルループ機能 = {}
+
+-- プロット蜀�°縺ｩ縺�°��character.親縺� ワークスペース 逶エ荳九〒縺™縺代l縺ーplot蜀�
+function LoopF​​eature.isPlayerInPlot(player)
+    local char = player.Character
+    文字でない場合はfalseを返す。
+    return char.Parent ~= Workspace
+終わり
+
+-- InPlot ValueObject 縺ｫ繧医ｋ譌§譚･繝√ぉ繝��BringAll逕����
+function LoopF​​eature.IsPlayerInsideSafeZone(player)
+    return player:FindFirstChild("InPlot") and player.InPlot.Value
+終わり
+
+function LoopF​​eature.CheckPlayer(player)
+    if player == LocalPlayer then return false end
+    if not player.Character then return false end
+    local hum = player.Character:FindFirstChildOfClass("Humanoid")
+    if not hum or hum.Health <= 0 then return false end
+    trueを返す
+終わり
+
+function LoopF​​eature.CheckPlayerVelocity(player)
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    ルートとルート.速度.大きさまたは0を返します
+終わり
+
+-- BringAll/譌§KillAll逕認定繝√ぉ繝��ケ
+function LoopF​​eature.CheckPlayerBring(player)
+    return LoopF​​eature.CheckPlayer(player)
+        LoopF​​eature.IsPlayerInsideSafeZone(player) ではありません
+        および LoopF​​eature.CheckPlayerVelocity(player) < 20
+終わり
+
+function LoopF​​eature.isWhitelisted(player)
+    Settings.Loop.WhitelistFriends が真でない場合は false を返す。
+    return LocalPlayer:IsFriendsWith(player.UserId)
+終わり
+
+-- BringAll/譌§KillAll逕里哥ollow 繧ｫ繝｡繝ｩ
+function LoopF​​eature.setupFreezePart()
+    State.freezePart でない場合
+        State.freezePart = Instance.new("Part")
+        State.freezePart.Anchored = true
+        State.freezePart.CanCollide = false
+        State.freezePart.Transparency = 1
+        State.freezePart.Size = Vector3.new(1, 1, 1)
+        State.freezePart.Parent = Workspace
+    終わり
+終わり
+
+function LoopF​​eature.FreezeCam(cframe)
+    LoopF​​eature.setupFreezePart()
+    State.freezePart.CFrame = cframe
+    Workspace.CurrentCamera.CameraType = Enum.CameraType.Follow
+    Workspace.CurrentCamera.CameraSubject = State.freezePart
+終わり
+
+function LoopF​​eature.unFreezeCam()
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then Workspace.CurrentCamera.CameraSubject = hum end
+    Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+終わり
+
+-- KillAll - ドメイン眠迚茨シガ畑
+function LoopF​​eature.fixCameraAtCurrentPosition()
+    もし State.cameraAnchor ならば、end を返す。
+    local root = Utility.GetPlayerRootPart()
+    ルートでない場合は終了を返す
+    ローカルカメラ = Workspace.CurrentCamera
+
+    State.cameraAnchor = Instance.new("Part")
+    State.cameraAnchor.Name = "CameraAnchor_KillAll"
+    State.cameraAnchor.Anchored = true
+    State.cameraAnchor.CanCollide = false
+    State.cameraAnchor.Transparency = 1
+    State.cameraAnchor.Size = Vector3.new(1, 1, 1)
+    State.cameraAnchor.CFrame = CFrame.new(root.Position + Vector3.new(0, 20, 0))
+    State.cameraAnchor.Parent = Workspace
+
+    State.originalCameraSubject = camera.CameraSubject
+    camera.CameraSubject = State.cameraAnchor
+終わり
+
+function LoopF​​eature.restoreCamera()
+    State.cameraAnchor の場合、
+        ローカルカメラ = Workspace.CurrentCamera
+        カメラと State.originalCameraSubject が一致すれば、
+            camera.CameraSubject = State.originalCameraSubject
+        終わり
+        State.cameraAnchor:Destroy()
+        State.cameraAnchor = nil
+        State.originalCameraSubject = nil
+    終わり
+終わり
+
+-- Noclip�フィールド���驕奇シ�
+function LoopF​​eature.startFloating()
+    Settings.Loop.floatConnection が真であれば、終了する。
+    Settings.Loop.floatConnection = RunService.Stepped:Connect(function()
+        if (getgenv().BringAll または getgenv().KillAll) and LocalPlayer.Character then
+            _ について、ipairs(LocalPlayer.Character:GetDescendants()) の部分を繰り返す
+                if part:IsA("BasePart") then part.CanCollide = false end
+            終わり
+        終わり
+    終わり）
+終わり
+
+function LoopF​​eature.stopFloating()
+    Settings.Loop.floatConnection の場合、
+        Settings.Loop.floatConnection:Disconnect()
+        Settings.Loop.floatConnection = nil
+    終わり
+終わり
+
+-- 阪茶繝医Ρ繝ｼ繧ｯ繧™繝ｼ繝翫�BringAll/譌§KillAll����
+function LoopF​​eature.SNOWshipOnce(part)
+    一部でない場合はfalseを返す。
+    part:FindFirstChild("PartOwner") かつ part.PartOwner.Value == LocalPlayer.Name の場合、
+        trueを返す
+    終わり
+    local setOwner = grabEventsFolder:FindFirstChild("SetNetworkOwner")
+    local root = Utility.GetPlayerRootPart()
+    setOwner と root の場合
+        setOwner:FireServer(part, CFrame.lookAt(root.Position, part.Position))
+    終わり
+    _ = 1, 5 の間、
+        タスクを待機します
+        part:FindFirstChild("PartOwner") かつ part.PartOwner.Value == LocalPlayer.Name の場合、
+            trueを返す
+        終わり
+    終わり
+    falseを返す
+終わり
+
+function LoopF​​eature.CheckNetworkOwnerShipOnPlayer(player)
+    local head = player.Character and player.Character:FindFirstChild("Head")
+    return head and head:FindFirstChild("PartOwner") and head.PartOwner.Value == LocalPlayer.Name
+終わり
+
+function LoopF​​eature.CreateBringBody(targetPart, dest)
+    local bp = targetPart:FindFirstChild("BringBody")
+    BPでない場合は
+        bp = Instance.new("BodyPosition")
+        bp.Name = "BringBody"
+        bp.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bp.D = 5000
+        bp.P = 1500000
+        bp.Parent = targetPart
+    終わり
+    bp.Position = typeof(dest) == "CFrame" and dest.Position or dest
+終わり
+
+-- Kill�ドメイン眠迚���Advanced Kill All�����������������
+function LoopF​​eature.killPlayer(player)
+    ローカル成功、err = pcall(function()
+        local char = player.Character
+        文字でない場合は、終了を返します。
+        local root = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        もし root でないか、または hum でないか、または hum.Health <= 0 ならば、end を返す
+
+        grabEventsFolder.SetNetworkOwner:FireServer(root, root.CFrame)
+        タスクを待機(0.1)
+        grabEventsFolder.DestroyGrabLine:FireServer(root)
+        タスクを待機(0.1)
+        文字:BreakJoints()
+    終わり）
+    成功しなかった場合は、warn("killPlayer エラー:", err) と表示し、false を返します。
+    trueを返す
+終わり
+
+-- 繝Ξ繝昴繝茨シ領域眠迚 KillAll / TargetKill 逕憲��
+function LoopF​​eature.teleportToPlayer(targetPlayer)
+    local now = tick()
+    if now - Settings.Loop.LastTeleportTime < Settings.Loop.TeleportCooldown then return false end
+
+    local localChar = LocalPlayer.Character
+    if not localChar then return false end
+    local localRoot = localChar:FindFirstChild("HumanoidRootPart")
+    local targetChar = targetPlayer.Character
+    localRoot でない場合、または targetChar でない場合は false を返す。
+    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+    targetRoot でない場合は false を返す。
+
+    Settings.Loop.OriginalPosition でない場合
+        Settings.Loop.OriginalPosition = localRoot.Position
+    終わり
+
+    localRoot.CFrame = CFrame.new(targetRoot.Position + Vector3.new(0, Settings.Loop.TeleportHeight, 0))
+    Settings.Loop.LastTeleportTime = now
+    trueを返す
+終わり
+
+function LoopF​​eature.returnToOriginalPosition()
+    Settings.Loop.OriginalPosition が該当しない場合は、end を返します。
+    local localChar = LocalPlayer.Character
+    if not localChar then return end
+    local root = localChar:FindFirstChild("HumanoidRootPart")
+    if root then root.CFrame = CFrame.new(Settings.Loop.OriginalPosition) end
+終わり
+
+-- 繝™繧ケット繝昴��繝菴咲¹繧ｽ繝ｼ繝茨ｼ�TargetKill逕����
+function LoopF​​eature.getRespawnPosition()
+    local spawn = Workspace:FindFirstChild("SpawnLocation")
+    スポーンが発生した場合は、スポーンの位置を返します。
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        objが「SpawnLocation」である場合、obj.Positionを返す。
+    終わり
+    return Vector3.new(0, 50, 0)
+終わり
+
+function LoopF​​eature.sortPlayersByRespawnDistance(players)
+    local respawnPos = LoopF​​eature.getRespawnPosition()
+    ローカルリスト = {}
+    _、players の player について、
+        local char = player.Character
+        文字の場合
+            local root = char:FindFirstChild("HumanoidRootPart")
+            もしルートならば
+                table.insert(list, { player = player, distance = (root.Position - respawnPos).Magnitude })
+            終わり
+        終わり
+    終わり
+    table.sort(list, function(a, b) return a.distance < b.distance end)
+    ローカルソート済み = {}
+    for _, data in ipairs(list) do table.insert(sorted, data.player) end
+    ソートされた値を返す
+終わり
+
+-- すべて持参してください。
+関数 LoopF​​eature.startBringAll()
+    local playerCFrame = Utility.GetPlayerCFrame()
+    if not playerCFrame then return end
+
+    local camCFrame = CFrame.lookAt(
+        Workspace.CurrentCamera.CFrame.Position + Vector3.new(-15, 15, 0),
+        プレイヤーCFrame.位置
+    ）
+    Workspace.CurrentCamera.CFrame = camCFrame
+
+    getgenv().BringAll が実行される間、
+        LoopF​​eature.FreezeCam(camCFrame)
+
+        ipairs(Players:GetPlayers()) 内の _、player について、
+            LoopF​​eature.CheckPlayerBring(player) の場合
+                local root = player.Character:FindFirstChild("HumanoidRootPart")
+                local hum = player.Character:FindFirstChildOfClass("Humanoid")
+                local ragdolled = hum and hum:FindFirstChild("Ragdolled")
+                ルートとハムとラグドールなら
+                    _ = 1, 50 の間、
+                        getgenv().BringAll が見つからない場合は、ループを終了します。
+                        LoopF​​eature.startFloating()
+                        LoopF​​eature.SNOWshipOnce(root)
+
+                        LoopF​​eature.CheckNetworkOwnerShipOnPlayer(player) の場合
+                            ラグドール化されていない場合。値
+                                そして、player:DistanceFromCharacter(playerCFrame.Position) > 10 ならば
+                                root.CFrame = playerCFrame
+                            終わり
+                            LoopF​​eature.CreateBringBody(root, playerCFrame)
+                            壊す
+                        終わり
+
+                        タスクを待機します
+                        root.Position.Y <= -12 の場合
+                            Utility.GetPlayerRootPart().CFrame = CFrame.new(root.Position + Vector3.new(0, 5, -15))
+                        それ以外
+                            Utility.GetPlayerRootPart().CFrame = CFrame.new(root.Position + Vector3.new(0, -10, -10))
+                        終わり
+                    終わり
+                終わり
+            終わり
+        終わり
+
+        Utility.GetPlayerRootPart().CFrame = CFrame.new(527, 123, -376)
+        タスクを待機します
+    終わり
+
+    LoopF​​eature.unFreezeCam()
+    LoopF​​eature.stopFloating()
+    Utility.GetPlayerRootPart().CFrame = playerCFrame
+終わり
+
+-- Kill All 繝ｫ繝ｼ繝暦ｼ�Advanced迚茨ｼ夊代＞鬆�ユ繝カー繝昴�繝医薬繝ｫ��
+function LoopF​​eature.startKillAll()
+    if Settings.Loop.killAllLoop then task.cancel(Settings.Loop.killAllLoop) Settings.Loop.killAllLoop = nil end
+
+    Settings.Loop.killAllLoop = task.spawn(function()
+        local root = Utility.GetPlayerRootPart()
+        もしルートならば
+            Settings.Loop.OriginalPosition = root.Position
+            LoopF​​eature.fixCameraAtCurrentPosition()
+        終わり
+
+        ローカル charAddedConn
+        charAddedConn = LocalPlayer.CharacterAdded:Connect(function()
+            Settings.Loop.killAllEnabled の場合
+                タスクを待機(0.5)
+                Settings.Loop.killAllEnabled が有効な場合は、LoopF​​eature.fixCameraAtCurrentPosition() を実行します。
+            終わり
+        終わり）
+
+        while Settings.Loop.killAllEnabled を実行する
+            local lp = LocalPlayer
+            local targetPlayers = {}
+
+            ipairs(Players:GetPlayers()) 内の _、player について、
+                プレイヤーが lp と等しくない場合
+                    Settings.Loop.ProcessedPlayers[player.UserId] ではありません
+                    LoopF​​eature.isWhitelisted(player) ではありません
+                    そして、LoopF​​eature.isPlayerInPlot(player) ではない場合
+                    table.insert(targetPlayers, player)
+                終わり
+            終わり
+
+            #targetPlayers == 0 の場合
+                Settings.Loop.ProcessedPlayers = {}
+                Settings.Loop.LastTeleportTime = 0
+                LoopF​​eature.returnToOriginalPosition()
+                続く
+            終わり
+
+            local localChar = lp.Character
+            if not localChar then task.wait(0.5) continue end
+            local localRoot = localChar:FindFirstChild("HumanoidRootPart")
+            if not localRoot then task.wait(0.5) continue end
+
+            -- 閾™蛻�°繧峨�霍晞屬縺コ代＞鬆�↓繧標準繝。
+            local withDist = {}
+            _、ipairs(targetPlayers)内のプレイヤーについて、
+                local char = player.Character
+                文字の場合
+                    local r = char:FindFirstChild("HumanoidRootPart")
+                    rならば
+                        table.insert(withDist, {
+                            プレイヤー = プレイヤー、
+                            距離 = (r.Position - localRoot.Position).Magnitude
+                        })
+                    終わり
+                終わり
+            終わり
+            table.sort(withDist, function(a, b) return a.distance < b.distance end)
+
+            for _, data in ip airs(withDist) do
+                if not Settings.Loop.killAllEnabled then break end
+                LoopF​​eature.teleportToPlayer(data.player) の場合
+                    タスクを待機(0.3)
+                    local ok = LoopF​​eature.killPlayer(data.player)
+                    よろしければ
+                        Settings.Loop.ProcessedPlayers[data.player.UserId] = true
+                    終わり
+                    タスクを待機(0.3)
+                それ以外
+                    タスクを待機(0.15)
+                終わり
+            終わり
+        終わり
+
+        if charAddedConn then charAddedConn:Disconnect() end
+        LoopF​​eature.returnToOriginalPosition()
+        Settings.Loop.OriginalPosition = nil
+        Settings.Loop.ProcessedPlayers = {}
+        LoopF​​eature.restoreCamera()
+    終わり）
+終わり
+
+-- Target Kill 繝ｫ繝ｼ繝暦シ領域欠螳壹�繝ｶ繧､繝､繝ｼ縺®縺そ縲∬ｷ晞屬蛻ｶ髯舌↑縺暦ｼ。
+function LoopF​​eature.startTargetKill()
+    if Settings.Loop.targetKillLoop then task.cancel(Settings.Loop.targetKillLoop) Settings.Loop.targetKillLoop = nil end
+
+    Settings.Loop.targetKillLoop = task.spawn(function()
+        while Settings.Loop.targetKillEnabled を実行する
+            local now = tick()
+            local validTargets = {}
+
+            for userId, _ in pairs(Settings.Loop.TargetPlayers) do
+                local player = Players:GetPlayerByUserId(userId)
+                プレイヤーとプレイヤーの親が一致する場合
+                    if LoopF​​eature.isPlayerInPlot(player) then continue end
+                    local char = player.Character
+                    文字の場合
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        hum と hum.Health > 0 の場合
+                            table.insert(validTargets, player)
+                        終わり
+                    終わり
+                それ以外
+                    Settings.Loop.TargetPlayers[userId] = nil
+                終わり
+            終わり
+
+            if #validTargets == 0 then task.wait(1) continue end
+
+            validTargets = LoopF​​eature.sortPlayersByRespawnDistance(validTargets)
+            ローカル ターゲット = validTargets[1]
+
+            もし現在 - Settings.Loop.LastTargetKillTime < 1.5 ならば
+                タスクを待機(0.1)
+                続く
+            終わり
+
+            Settings.Loop.OriginalPosition でない場合
+                local char = LocalPlayer.Character
+                文字の場合
+                    local r = char:FindFirstChild("HumanoidRootPart")
+                    if r then Settings.Loop.OriginalPosition = r.Position end
+                終わり
+            終わり
+
+            LoopF​​eature.teleportToPlayer(target) の場合
+                タスクを待機(0.3)
+                local ok = LoopF​​eature.killPlayer(target)
+                よろしければ
+                    タスクを待機(0.3)
+                    LoopF​​eature.returnToOriginalPosition()
+                    Settings.Loop.OriginalPosition = nil
+                    Settings.Loop.LastTeleportTime = 0
+                終わり
+            終わり
+
+            Settings.Loop.LastTargetKillTime = tick()
+            タスクを待機(0.1)
+        終わり
+
+        LoopF​​eature.returnToOriginalPosition()
+        Settings.Loop.OriginalPosition = nil
+    終わり）
+終わり
+
+-- 繝励Ξ繧､繝､繝ｼ繝™繧ケットフィールド峩譁ー
+function LoopF​​eature.updatePlayerDropdown()
+    ローカルリスト = {}
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        プレイヤーが LocalPlayer と等しくない場合
+            テーブルに挿入(リスト、プレイヤー名)
+        終わり
+    終わり
+    リストを返す
+終わり
+
+function LoopF​​eature.getSelectedTargetsDisplay()
+    ローカル名 = {}
+    for userId, _ in pairs(Settings.Loop.TargetPlayers) do
+        local p = Players:GetPlayerByUserId(userId)
+        p の場合、table.insert(names, p.Name) end
+    終わり
+    return #names > 0 and table.concat(names, ", ") or "None"
+終わり
+
+-- ============================================
+-- ビジュアル讖溯
+-- ============================================
+local VisualsFeature = {}
+
+function VisualsFeature.updateESP()
+    for i = #State.ESPObjects, 1, -1 do
+        local highlight = State.ESPObjects[i]
+        Settings.Visuals.ESPEnabled でない場合、または highlight でない場合、または highlight.Parent でない場合、
+            pcall(function()
+                ハイライト:Destroy()
+            終わり）
+            table.remove(State.ESPObjects, i)
+        それ以外
+            highlight.FillColor = Settings.Visuals.ESPFillColor
+            highlight.OutlineColor = Settings.Visuals.ESPOutlineColor
+            highlight.FillTransparency = Settings.Visuals.ESPFillTransparency
+            highlight.OutlineTransparency = Settings.Visuals.ESPOutlineTransparency
+        終わり
+    終わり
+    
+    for i = #State.HitboxObjects, 1, -1 do
+        local hitbox = State.HitboxObjects[i]
+        Settings.Visuals.ShowHitbox でない場合、または hitbox でない場合、または hitbox.Parent でない場合、
+            pcall(function()
+                ヒットボックス:破壊()
+            終わり）
+            table.remove(State.HitboxObjects, i)
+        それ以外
+            hitbox.Color3 = Settings.Visuals.HitboxColor
+        終わり
+    終わり
+    
+    for i = #State.NameLabels, 1, -1 do
+        ローカルラベル = State.NameLabels[i]
+        Settings.Visuals.ShowPlayerInfo でない場合、または label でない場合、または label.Parent でない場合、
+            pcall(function()
+                ラベル:Destroy()
+            終わり）
+            table.remove(State.NameLabels, i)
+        終わり
+    終わり
+終わり
+
+function VisualsFeature.createHitbox(character)
+    キャラクター:FindFirstChild("__esp_hitbox") の場合、終了する
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local head = character:FindFirstChild("Head")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local leftLeg = character:FindFirstChild("Left Leg") or character:FindFirstChild("LeftFoot")
+    local rightLeg = character:FindFirstChild("Right Leg") or character:FindFirstChild("RightFoot")
+    
+    hrpでない場合、またはheadでない場合は、endを返します。
+    
+    local topY = head.Position.Y + (head.Size.Y / 2)
+    local bottomY = hrp.Position.Y - (hrp.Size.Y / 2)
+    
+    左脚の場合
+        local legBottom = leftLeg.Position.Y - (leftLeg.Size.Y / 2)
+        bottomY = math.min(bottomY, legBottom)
+    終わり
+    
+    右脚の場合
+        local legBottom = rightLeg.Position.Y - (rightLeg.Size.Y / 2)
+        bottomY = math.min(bottomY, legBottom)
+    終わり
+    
+    人間型で人間型の腰の高さが
+        bottomY = bottomY - humanoid.HipHeight
+    終わり
+    
+    local totalHeight = topY - bottomY
+    ローカルセンターY = (topY + bottomY) / 2
+    local offset = Vector3.new(0, centerY - hrp.Position.Y, 0)
+    
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = "__esp_hitbox"
+    box.Size = Vector3.new(hrp.Size.X * 1.5, totalHeight, hrp.Size.Z * 1.5)
+    box.CFrame = CFrame.new(offset)
+    box.Color3 = Settings.Visuals.HitboxColor
+    box.Transparency = 0.7
+    box.AlwaysOnTop = true
+    box.ZIndex = 1
+    box.Adornee = hrp
+    box.Parent = キャラクター
+    
+    table.insert(State.HitboxObjects, box)
+終わり
+
+function VisualsFeature.createNameLabel(character, player)
+    キャラクター:FindFirstChild("__esp_namelabel") の場合、終了を返します。
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    hrpでない場合は、終了を返す
+    
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "__esp_namelabel"
+    billboardGui.Adornee = hrp
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = キャラクター
+    
+    local iconFrame = Instance.new("Frame")
+    iconFrame.Size = UDim2.new(0, 40, 0, 40)
+    iconFrame.Position = UDim2.new(0.5, -70, 0, 0)
+    iconFrame.BackgroundTransparency = 1
+    iconFrame.Parent = billboardGui
+    
+    local iconImage = Instance.new("ImageLabel")
+    iconImage.Size = UDim2.new(1, 0, 1, 0)
+    iconImage.BackgroundTransparency = 1
+    iconImage.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    iconImage.Parent = iconFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = iconImage
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(0, 150, 0, 40)
+    nameLabel.Position = UDim2.new(0.5, -30, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = billboardGui
+    
+    table.insert(State.NameLabels, billboardGui)
+終わり
+
+function VisualsFeature.addESP(character)
+    キャラクター:FindFirstChild("__esp_highlight") の場合、終了する。
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "__esp_highlight"
+    highlight.FillColor = Settings.Visuals.ESPFillColor
+    highlight.OutlineColor = Settings.Visuals.ESPOutlineColor
+    highlight.FillTransparency = Settings.Visuals.ESPFillTransparency
+    highlight.OutlineTransparency = Settings.Visuals.ESPOutlineTransparency
+    highlight.Parent = 文字
+    
+    table.insert(State.ESPObjects, highlight)
+終わり
+
+function VisualsFeature.enableESP()
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        プレイヤーが LocalPlayer と等しくなく、かつプレイヤーがキャラクターである場合
+            VisualsFeature.addESP(player.Character)
+            Settings.Visuals.ShowHitbox の場合
+                VisualsFeature.createHitbox(player.Character)
+            終わり
+            Settings.Visuals.ShowPlayerInfo の場合
+                VisualsFeature.createNameLabel(player.Character, player)
+            終わり
+        終わり
+    終わり
+終わり
+
+function VisualsFeature.disableESP()
+    for _, highlight in ipairs(State.ESPObjects) do
+        pcall(function()
+            ハイライト:Destroy()
+        終わり）
+    終わり
+    State.ESPObjects = {}
+    
+    for _, hitbox in ipairs(State.HitboxObjects) do
+        pcall(function()
+            ヒットボックス:破壊()
+        終わり）
+    終わり
+    State.HitboxObjects = {}
+    
+    for _, label in ipairs(State.NameLabels) do
+        pcall(function()
+            ラベル:Destroy()
+        終わり）
+    終わり
+    状態名ラベル = {}
+終わり
+
+function VisualsFeature.enableHitbox()
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        プレイヤーが LocalPlayer と等しくなく、かつプレイヤーがキャラクターである場合
+            VisualsFeature.createHitbox(player.Character)
+        終わり
+    終わり
+終わり
+
+function VisualsFeature.disableHitbox()
+    for _, hitbox in ipairs(State.HitboxObjects) do
+        pcall(function()
+            ヒットボックス:破壊()
+        終わり）
+    終わり
+    State.HitboxObjects = {}
+終わり
+
+function VisualsFeature.enableNameLabels()
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        プレイヤーが LocalPlayer と等しくなく、かつプレイヤーがキャラクターである場合
+            VisualsFeature.createNameLabel(player.Character, player)
+        終わり
+    終わり
+終わり
+
+function VisualsFeature.disableNameLabels()
+    for _, label in ipairs(State.NameLabels) do
+        pcall(function()
+            ラベル:Destroy()
+        終わり）
+    終わり
+    状態名ラベル = {}
+終わり
+
+-- 観戦する
+function VisualsFeature.getLocalHum()
+    if not LocalPlayer.Character then return end
+    return LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+終わり
+
+function VisualsFeature.spectatePlayer(playerName)
+    playerName が "" または playerName が LocalPlayer.Name と等しい場合
+        Workspace.CurrentCamera.CameraSubject = VisualsFeature.getLocalHum()
+        Settings.Visuals.SpectatePlayer = nil
+        戻る
+    終わり
+    
+    local targetPlayer = nil
+    local lowerName = playerName:lower()
+    
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        if player.DisplayName:lower():sub(1, #lowerName) == lowerName または
+           player.Name:lower():sub(1, #lowerName) == lowerName then
+            targetPlayer = プレイヤー
+            壊す
+        終わり
+    終わり
+    
+    targetPlayer と targetPlayer.Character が一致する場合
+        local humanoid = targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+        人型であれば
+            Workspace.CurrentCamera.CameraSubject = humanoid
+            Settings.Visuals.SpectatePlayer = targetPlayer
+        終わり
+    終わり
+終わり
+
+function VisualsFeature.getPlayerNames()
+    ローカル名 = {}
+    ipairs(Players:GetPlayers()) 内の _、player について、
+        table.insert(names, player.Name)
+    終わり
+    戻り値名
+終わり
+
+-- ============================================
+-- オーラ繧桑繝匁ｩ溯
+-- ============================================
+local AuraFeature = {}
+
+function AuraFeature.UpdateAuras(dt)
+    State.timers.AuraTimer = State.timers.AuraTimer + dt
+    
+    State.timers.AuraTimer >= 0.5 の場合
+        local root = Utility.GetPlayerRootPart()
+        もしrootでなければ
+            State.timers.AuraTimer = 0
+            戻る
+        終わり
+        
+        for _, v in ipairs(AuraHelper.GetNearParts(root.Position, Settings.Aura.AuraRadius)) do
+            v.アンカーでない場合、
+               v:IsDescendantOf(Utility.GetPlayerCharacter()) ではなく、
+               (v.Name == "HumanoidRootPart" または v.Name == "Torso" または v.Name == "Head") then
+                
+                local p = Players:GetPlayerFromCharacter(v.Parent)
+                
+                AuraHelper.IsFriend(p) かつ Settings.Aura.IgnoreFriendAura の場合、
+                    続く
+                終わり
+                
+                Settings.Aura.VoidAura の場合
+                    タスク.spawn(function()
+                        FTAP.SetNetworkOwner(v)
+                        v.CanCollide = false
+                        AuraHelper.Velocity(v, Vector3.new(0, 1e4, 0))
+                    終わり）
+                終わり
+                
+                Settings.Aura.RagdollAura の場合
+                    タスク.spawn(function()
+                        local pos = v.CFrame
+                        FTAP.SetNetworkOwner(v)
+                        AuraHelper.Velocity(v, Vector3.new(0, -256, 0))
+                        タスクを待機(0.1)
+                        AuraHelper.MoveTo(v, pos)
+                        AuraHelper.Velocity(v, Vector3.zero)
+                    終わり）
+                終わり
+                
+                Settings.Aura.DeathAura の場合
+                    タスク.spawn(function()
+                        FTAP.SetNetworkOwner(v)
+                        タスクを待機(0.1)
+                        local humanoid = v.Parent:FindFirstChildOfClass("Humanoid")
+                        人型であれば
+                            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+                        終わり
+                        タスクを待機(0.5)
+                        FTAP.DestroyGrabLine(v)
+                    終わり）
+                終わり
+                
+                Settings.Aura.FireAura の場合
+                    タスク.spawn(function()
+                        local campfire = AuraHelper.SpawnToy("Campfire", root.CFrame)
+                        キャンプファイヤーの場合
+                            local soundPart = campfire:FindFirstChild("SoundPart")
+                            サウンドパートの場合
+                                FTAP.SetNetworkOwner(soundPart)
+                                タスクを待機(0.1)
+                                soundPart.CFrame = v.CFrame
+                                タスク.delay(0.5, function()
+                                    pcall(function()
+                                        DeleteToyRE:FireServer(campfire)
+                                    終わり）
+                                終わり）
+                            終わり
+                        終わり
+                    終わり）
+                終わり
+            終わり
+        終わり
+        
+        State.timers.AuraTimer = 0
+    終わり
+終わり
+
+-- ============================================
+-- Line繧芳繝匁ｩ溯���Blitz邨ア蜷茨志。
+-- ============================================
+ローカルラインフィーチャー = {}
+
+-- さらなる拡張のために CharacterAndBeamMove スクリプト環境を取得します
+local playerScriptsLine = LocalPlayer:WaitForChild("PlayerScripts")
+local characterBeamMoveScript = playerScriptsLine:WaitForChild("CharacterAndBeamMove")
+local senv = getsenv and getsenv(characterBeamMoveScript) or getfenv(characterBeamMoveScript)
+local minDistance = 3
+
+-- GrabPartsの監視機能の強化
+Workspace.ChildAdded:Connect(function(model)
+    model.Name == "GrabParts" かつ Settings.Line.ultragrabbb の場合
+        local dragPart = model:FindFirstChild("DragPart")
+        dragPart の場合
+            local alignOrientation = dragPart:FindFirstChild("AlignOrientation")
+            alignOrientation の場合
+                alignOrientation.Responsiveness = 200
+                alignOrientation.MaxTorque = math.huge
+            終わり
+            
+            local alignPosition = dragPart:FindFirstChild("AlignPosition")
+            alignPosition の場合
+                alignPosition.MaxAxesForce = Vector3.new(math.huge, math.huge, math.huge)
+                alignPosition.MaxForce = math.huge
+                alignPosition.Responsiveness = 200
+            終わり
+        終わり
+    終わり
+    
+    model.Name が "GrabParts" で、Settings.Line が InvisibleLine の場合
+        CreateGrabLine:FireServer()
+    終わり
+終わり）
+
+-- 線色の配列
+local lineColors = {
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0),
+    Color3.new(1, 0, 0)
+}
+
+-- GUI設定をさらに拡張する（常時有効、切り替え不要）
+関数 LineFeature.IsMobile()
+    LocalPlayer.PlayerGui:FindFirstChild("ContextActionGui") の場合
+        trueを返す
+    終わり
+    falseを返す
+終わり
+
+local guiLine = Instance.new("ScreenGui")
+guiLine.Name = "FurtherExtendGUI"
+guiLine.ResetOnSpawn = false
+guiLine.Parent = LocalPlayer.PlayerGui
+
+-- 拡大ボタン
+local imageButton = Instance.new("ImageButton")
+imageButton.Name = "増加ボタン"
+imageButton.Size = UDim2.new(0, 50, 0, 50)
+imageButton.Position = UDim2.new(0.5, 60, 0.5, -25)
+imageButton.BackgroundTransparency = 1
+imageButton.ImageTransparency = 0.2
+imageButton.Visible = false
+imageButton.ImageColor3 = Color3.fromRGB(142, 142, 142)
+imageButton.Parent = guiLine
+
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(1, 0, 1, 0)
+imageLabel.Image = "rbxassetid://9603827111"
+imageLabel.BackgroundTransparency = 1
+imageLabel.Parent = imageButton
+
+-- 減少ボタン
+local imageButtonDe = Instance.new("ImageButton")
+imageButtonDe.Name = "減少ボタン"
+imageButtonDe.Size = UDim2.new(0, 50, 0, 50)
+imageButtonDe.Position = UDim2.new(0.5, -110, 0.5, -25)
+imageButtonDe.BackgroundTransparency = 1
+imageButtonDe.ImageTransparency = 0.2
+imageButtonDe.Visible = false
+imageButtonDe.ImageColor3 = Color3.fromRGB(142, 142, 142)
+imageButtonDe.Parent = guiLine
+
+local imageLabelDe = Instance.new("ImageLabel")
+imageLabelDe.Size = UDim2.new(1, 0, 1, 0)
+imageLabelDe.Image = "rbxassetid://9603826756"
+imageLabelDe.BackgroundTransparency = 1
+imageLabelDe.Parent = imageButtonDe
+
+-- 機能をさらに拡張する
+関数 LineFeature.buttonClicked()
+    senv と senv.distance が一致する場合
+        senv.distance = (senv.distance or 0) + Settings.Line.IncreaseLineExtend
+        senv.distance < minDistance の場合
+            senv.distance = minDistance
+        終わり
+    終わり
+終わり
+
+function LineFeature.buttonClickedDE()
+    senv と senv.distance が一致する場合
+        senv.distance = (senv.distance または 0) - Settings.Line.IncreaseLineExtend
+        senv.distance < minDistance の場合
+            senv.distance = minDistance
+        終わり
+    終わり
+終わり
+
+function LineFeature.toggleButtonState(isExtended)
+    isExtendedの場合
+        imageButton.Visible = true
+        imageButton.Active = true
+        imageButtonDe.Visible = true
+        imageButtonDe.Active = true
+    それ以外
+        imageButton.Visible = false
+        imageButton.Active = false
+        imageButtonDe.Visible = false
+        imageButtonDe.Active = false
+    終わり
+終わり
+
+function LineFeature.toggleDefaultExtendButtons(isVisible)
+    local controlsGui = LocalPlayer.PlayerGui:FindFirstChild("ControlsGui")
+    コントロールGuiの場合
+        local decreaseButton = controlsGui:FindFirstChild("DecreaseLineExtendButton")
+        local increaseButton = controlsGui:FindFirstChild("IncreaseLineExtendButton")
+        減少ボタンの場合
+            decreaseButton.Visible = isVisible
+        終わり
+        increaseButton の場合
+            increaseButton.Visible = isVisible
+        終わり
+    終わり
+終わり
+
+-- 接続ボタン（モバイル端末のみ）
+imageButton.MouseButton1Click:Connect(LineFeature.buttonClicked)
+imageButtonDe.MouseButton1Click:Connect(LineFeature.buttonClickedDE)
+
+-- PC用マウスホイール操作（常時有効）
+UserInputService.InputChanged:Connect(function(input, gameProcessed)
+    ゲーム処理が完了していない場合は
+        if input.UserInputType == Enum.UserInputType.MouseWheel then
+            入力位置Zが0より大きい場合
+                -- 上にスクロールして距離を広げる
+                LineFeature.buttonClicked()
+            elseif input.Position.Z < 0 then
+                -- スクロールダウン - 距離を縮める
+                LineFeature.buttonClickedDE()
+            終わり
+        終わり
+    終わり
+終わり）
+
+-- モニター保持状態（モバイルユーザー向けにのみボタンを表示）
+LocalPlayer:WaitForChild("IsHeld").Changed:Connect(function(isHolding)
+    isHolding の場合
+        LineFeature.IsMobile() の場合
+            LineFeature.toggleDefaultExtendButtons(false)
+            LineFeature.toggleButtonState(true)
+        終わり
+    それ以外
+        LineFeature.IsMobile() の場合
+            LineFeature.toggleDefaultExtendButtons(true)
+        終わり
+        LineFeature.toggleButtonState(false)
+    終わり
+終わり）
+
+-- レインボー効果機能
+ローカル関数 updateRainbowLine()
+    spawn(function()
+        ローカル色相 = 0
+        設定の線がRainbowLineである間、
+            色相 = (色相 + (設定線.線速度 * 0.01)) % 1
+            local color = Color3.fromHSV(hue, 1, 1)
+            
+            for i = 1, #lineColors do
+                i == 1 の場合
+                    lineColors[i] = ColorSequence.new(color)
+                それ以外
+                    lineColors[i] = color
+                終わり
+            終わり
+            updateLineColorsEvent:FireServer(unpack(lineColors))
+            タスクを待機(0.05)
+        終わり
+    終わり）
+終わり
+
+-- 点滅効果機能
+ローカル関数 updateFlashingLine()
+    spawn(function()
+        local visible = true
+        設定の線が点滅している間、
+            見える場合
+                for i = 1, #lineColors do
+                    i == 1 の場合
+                        lineColors[i] = ColorSequence.new(Settings.Line.LineColorChangeValue)
+                    それ以外
+                        lineColors[i] = Settings.Line.LineColorChangeValue
+                    終わり
+                終わり
+            それ以外
+                for i = 1, #lineColors do
+                    i == 1 の場合
+                        lineColors[i] = ColorSequence.new(Color3.new(0, 0, 0))
+                    それ以外
+                        lineColors[i] = Color3.new(0, 0, 0)
+                    終わり
+                終わり
+            終わり
+            updateLineColorsEvent:FireServer(unpack(lineColors))
+            可視＝非可視
+            task.wait(Settings.Line.StrobeSpeed)
+        終わり
+    終わり）
+終わり
+
+-- 勾配効果関数
+ローカル関数 updateGradientLine()
+    spawn(function()
+        設定の線がグラデーション線になっている間、
+            local primaryColor = Settings.Line.LineColorChangeValue
+            local secondaryColor = Color3.new(
+                1 - primaryColor.R、
+                1 - primaryColor.G、
+                1 - primaryColor.B
+            ）
+            
+            for i = 1, #lineColors do
+                local t = (i - 1) / (#lineColors - 1)
+                local blendedColor = primaryColor:Lerp(secondaryColor, t)
+                
+                i == 1 の場合
+                    lineColors[i] = ColorSequence.new(blendedColor)
+                それ以外
+                    lineColors[i] = blendedColor
+                終わり
+            終わり
+            updateLineColorsEvent:FireServer(unpack(lineColors))
+            タスクを待機(0.1)
+        終わり
+    終わり）
+終わり
+
+-- パルス効果機能
+ローカル関数 updatePulseEffect()
+    spawn(function()
+        局所強度 = 0
+        ローカル増加 = true
+        While Settings.Line.PulseEffect do
+            増加する場合
+                強度 = 強度 + 0.05
+                強度が1以上の場合
+                    増加 = false
+                終わり
+            それ以外
+                強度 = 強度 - 0.05
+                強度≦0の場合
+                    増加 = true
+                終わり
+            終わり
+            
+            local pulsedColor = Color3.new(
+                Settings.Line.LineColorChangeValue.R *強度、
+                設定.Line.LineColorChangeValue.G * 強度、
+                設定.Line.LineColorChangeValue.B * 強度
+            ）
+            
+            for i = 1, #lineColors do
+                i == 1 の場合
+                    lineColors[i] = ColorSequence.new(pulsedColor)
+                それ以外
+                    lineColors[i] = pulsedColor
+                終わり
+            終わり
+            updateLineColorsEvent:FireServer(unpack(lineColors))
+            タスクを待機(0.05)
+        終わり
+    終わり）
+終わり
+
+-- ============================================
+-- ToyMod Wings 讖溯��育オア蜷茨志
+-- ============================================
+local ToyModFeature = {}
+
+ローカルプロット = {
+    {Name = "Plot1", Center = Vector3.new(-581.7, -6.4, 89.1), Radius = 53.51},
+    {Name = "Plot2", Center = Vector3.new(-461.3, -7.4, -141.6), Radius = 71.29},
+    {Name = "Plot3", Center = Vector3.new(305.5, -4.5, 489.0), Radius = 74.07},
+    {Name = "Plot4", Center = Vector3.new(534.7, 83.5, -370.3), Radius = 51.06},
+    {Name = "Plot5", Center = Vector3.new(588.4, 124.3, -93.9), Radius = 54.64}
+}
+
+function ToyModFeature.GetToys()
+    地元の玩具 = {}
+    local playerName = LocalPlayer.Name
+
+    local spawned = workspace:FindFirstChild(playerName .. "SpawnedInToys")
+    スポーンした場合
+        for _, toy in pairs(spawned:GetChildren()) do
+            もし toy.Name が "ToyNumber" と等しくない場合
+                テーブルに(おもちゃ、おもちゃ)を挿入します。
+            終わり
+        終わり
+    終わり
+
+    #toys == 0 の場合
+        local toysFolder = workspace:FindFirstChild("Toys")
+        おもちゃフォルダの場合
+            for _, toy in pairs(toysFolder:GetChildren()) do
+                おもちゃが「モデル」である場合、またはおもちゃが「ベースパーツ」である場合
+                    テーブルに(おもちゃ、おもちゃ)を挿入します。
+                終わり
+            終わり
+        終わり
+    終わり
+
+    #toys == 0 の場合
+        for _, obj in pairs(workspace:GetChildren()) do
+            obj:IsA("Model") かつ obj ~= LocalPlayer.Character の場合、
+                local isPart = obj:FindFirstChildWhichIsA("BasePart")
+                isPart かつ obj.Name が "Baseplate" でなく、かつ obj.Name が "Terrain" でない場合
+                    ローカルサイズ = obj:GetExtentsSize()
+                    size.Magnitude > 0.5 かつ size.Magnitude < 50 の場合
+                        テーブルに(おもちゃ、オブジェクト)を挿入します。
+                    終わり
+                終わり
+            終わり
+        終わり
+    終わり
+
+    Settings.ToyMod.UsePlotItems の場合
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        hrpでない場合は、おもちゃを返却してください。
+
+        local playerPos = hrp.Position
+        local myPlot = nil
+
+        ipairs(Plots) 内の _, plotInfo について、
+            local distXZ = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(plotInfo.Center.X, plotInfo.Center.Z)).Magnitude
+            distXZ <= plotInfo.Radius の場合、
+                myPlot = plotInfo
+                壊す
+            終わり
+        終わり
+
+        myPlot の場合
+            local plotItems = workspace:FindFirstChild("PlotItems")
+            plotItems の場合
+                local plotFolder = plotItems:FindFirstChild(myPlot.Name)
+                もし plotFolder ならば
+                    for _, obj in pairs(plotFolder:GetDescendants()) do
+                        if (obj:IsA("BasePart") or obj:IsA("Model")) and obj.Name ~= "ToysLimitNum" then
+                            local size = obj:IsA("BasePart") and obj.Size or (obj:IsA("Model") and obj:GetExtentsSize())
+                            size と size.Magnitude > 1 かつ size.Magnitude < 20 の場合
+                                テーブルに(おもちゃ、オブジェクト)を挿入します。
+                            終わり
+                        終わり
+                    終わり
+                終わり
+            終わり
+        終わり
+    終わり
+
+    おもちゃを返品する
+終わり
+
+function ToyModFeature.CreateWings()
+    State.ToyModWings.Connection の場合
+        State.ToyModWings.Connection:Disconnect()
+        State.ToyModWings.Connection = nil
+    終わり
+    
+    for _, v in pairs(State.ToyModWings.BodyPositions) do
+        v と v.Parent が一致した場合、v を破棄します。
+    終わり
+    
+    for _, v in pairs(State.ToyModWings.AlignOrientations) do
+        v と v.Parent が一致した場合、v を破棄します。
+    終わり
+    
+    State.ToyModWings.Parts = {}
+    State.ToyModWings.BodyPositions = {}
+    State.ToyModWings.AlignOrientations = {}
+    State.ToyModWings.OriginalAnchored = {}
+    State.ToyModWings.FlapTime = 0
+    State.ToyModWings.TargetCFrames = {}
+
+    ローカルのおもちゃ = ToyModFeature.GetToys()
+    print("" .. #おもちゃ .. " 個見つかりました")
+    
+    #toys == 0 の場合
+        print("おもちゃが見つかりません! 最初におもちゃを選択するか、螳ｶ縺®繧「繧､繝�Β菴固逕®｣を有効にしてください
+        戻る
+    終わり
+
+    for i = 1, #toys do
+        ローカルのおもちゃ = toys[i]
+        ローカルパーツ = toy:IsA("BasePart") かつ toy または toy:FindFirstChildWhichIsA("BasePart")
+        一部でない場合は、終了を続行します。
+
+        local partsToProcess = toy:IsA("Model") and toy:GetDescendants() or {part}
+        for _, p in pairs(partsToProcess) do
+            p:IsA("BasePart") の場合
+                table.insert(State.ToyModWings.OriginalAnchored, {Part = p, Anchored = p.Anchored})
+                p.Anchored の場合
+                    p.Anchored = false
+                終わり
+                p.CanCollide = false
+            終わり
+        終わり
+
+        local bp = Instance.new("BodyPosition")
+        bp.MaxForce = Vector3.new(5e6, 5e6, 5e6)
+        bp.P = 15000
+        bp.D = 200
+        bp.Position = part.Position
+        bp.Parent = part
+        table.insert(State.ToyModWings.BodyPositions, bp)
+
+        local ao = Instance.new("AlignOrientation")
+        ao.MaxTorque = 400000
+        ao.応答性 = 2000
+        ao.Mode = Enum.OrientationAlignmentMode.OneAttachment
+        ao.Parent = パーツ
+        local att = Instance.new("Attachment", part)
+        ao.Attachment0 = att
+        table.insert(State.ToyModWings.AlignOrientations, ao)
+        table.insert(State.ToyModWings.Parts, part)
+        table.insert(State.ToyModWings.TargetCFrames, part.CFrame)
+    終わり
+
+    State.ToyModWings.Connection = RunService.Heartbeat:Connect(function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        hrpでない場合は、終了を返す
+        ローカルルート = hrp.CFrame
+
+        local currentPos = hrp.Position
+        local playerVelocity = hrp.AssemblyLinearVelocity.Magnitude
+        
+        State.ToyModWings.LastPos でない場合
+            State.ToyModWings.LastPos = currentPos
+        終わり
+        
+        local cframeVelocity = (currentPos - State.ToyModWings.LastPos).Magnitude / (1 / 60)
+        State.ToyModWings.LastPos = currentPos
+        
+        playerVelocity = math.max(playerVelocity, cframeVelocity)
+        
+        ローカル速度乗数 = 1
+        Settings.ToyMod.SpeedLinkFlap の場合
+            速度乗数 = 0.7 + (プレイヤー速度 / 20)
+        終わり
+
+        Settings.ToyMod.FlapEnabled の場合
+            State.ToyModWings.FlapTime = State.ToyModWings.FlapTime + Settings.ToyMod.FlapSpeed * speedMultiplier * 0.016
+        終わり
+
+        local total = #State.ToyModWings.Parts
+        ローカルセンター = (合計 + 1) / 2
+
+        for i, part in ipairs(State.ToyModWings.Parts) do
+            local offsetFromCenter = i - center
+            local side = math.sign(offsetFromCenter)
+            local dist = math.abs(offsetFromCenter)
+
+            local xOff = side * (dist + 0.5) * Settings.ToyMod.XSpacing
+
+            ローカルフラップ = 0
+            local yMove = 0
+            local zRot = 0
+
+            Settings.ToyMod.FlapEnabled の場合
+                ローカル時間 = State.ToyModWings.FlapTime
+                local mul = (dist + 1) / (math.max(center, 1) + 0.5)
+
+                -- 蟾ｦ蜿ｳ縺§菴咲嶌繧貞酔縺俶婿蜷代↓�亥酔譛溘＠繧�☆縺擾ｼ�
+                local PhaseOffset = dist * 0.08 -- サイド縺®隨ｦ蜿キ繧剃上★縲∝クロクロ縺ｫ豁”縺®驕�l
+
+                Settings.ToyMod.FlapType == 1 の場合
+                    flap = math.sin(time + phaseOffset)
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.2) * mul
+                    zRot = flap * Settings.ToyMod.FlapRange * mul
+
+                elseif Settings.ToyMod.FlapType == 2 then
+                    flap = math.sin(time + phaseOffset * 1.5) * 0.8 + math.sin(time * 0.5 + phaseOffset * 0.8) * 0.2
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.15) * mul
+                    zRot = math.sin(time * 1.2 + phaseOffset * 1.2) * Settings.ToyMod.FlapRange * 0.7 * mul
+
+                elseif Settings.ToyMod.FlapType == 3 then
+                    flap = math.sin(time * 0.5 + phaseOffset * 0.4) * 0.6 + math.sin(time * 0.3 + phaseOffset * 0.6) * 0.4
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.3) * mul
+                    zRot = math.sin(time * 0.8 + phaseOffset * 0.5) * (Settings.ToyMod.FlapRange * 0.3) * mul
+
+                elseif Settings.ToyMod.FlapType == 4 then
+                    flap = math.sin(time * 2 + phaseOffset * 2) * 0.7
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.25) * mul
+                    zRot = math.sin(time * 2.5 + phaseOffset * 2.2) * Settings.ToyMod.FlapRange * 0.8 * mul
+
+                elseif Settings.ToyMod.FlapType == 5 then
+                    flap = math.sin(time * 0.8 + phaseOffset) * 0.6
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.3) * mul
+                    zRot = (時間 * 80 + 距離 * 30) % 360
+
+                elseif Settings.ToyMod.FlapType == 6 then
+                    flap = math.sin(time * 0.3 + phaseOffset * 3) * 0.9
+                    yMove = (flap + 0.5) * (Settings.ToyMod.FlapRange * 0.2) * mul
+                    zRot = math.sin(time * 0.4 + phaseOffset * 1.5) * Settings.ToyMod.FlapRange * 0.6 * mul
+
+                elseif Settings.ToyMod.FlapType == 7 then
+                    flap = math.cos(time * 1.5 + phaseOffset * 1.5) * 0.8
+                    yMove = math.sin(time * 0.6 + phaseOffset) * (Settings.ToyMod.FlapRange * 0.15) * mul
+                    zRot = flap * Settings.ToyMod.FlapRange * 1.2 * mul
+
+                elseif Settings.ToyMod.FlapType == 8 then
+                    local pulse = math.floor(time * 2 + phaseOffset) % 2
+                    フラップ＝脈拍＝＝0かつ1または-1
+                    yMove = flap * (Settings.ToyMod.FlapRange * 0.2) * mul
+                    zRot = flap * Settings.ToyMod.FlapRange * 0.7 * mul
+
+                elseif Settings.ToyMod.FlapType == 9 then
+                    local cycleFrac = ((time + phaseOffset) % 4) / 4
+                    cycleFrac < 0.3 の場合
+                        yMove = (0.3 - cycleFrac) / 0.3 * Settings.ToyMod.FlapRange * 0.4 * mul
+                    それ以外
+                        yMove = -((cycleFrac - 0.3) / 0.7) * Settings.ToyMod.FlapRange * 0.4 * mul
+                    終わり
+                    zRot = math.sin(time * 1.5 + phaseOffset) * Settings.ToyMod.FlapRange * 0.5 * mul
+
+                elseif Settings.ToyMod.FlapType == 10 then
+                    flap = math.sin(time * 0.7 + phaseOffset * 4) * 0.8
+                    yMove = math.sin(time * 0.5 + phaseOffset * 2) * (Settings.ToyMod.FlapRange * 0.25) * mul
+                    zRot = (math.sin(time * 1.1 + phaseOffset * 3) + math.sin(time * 0.5 + phaseOffset * 1)) * Settings.ToyMod.FlapRange * 0.5 * mul
+
+                elseif Settings.ToyMod.FlapType == 11 then
+                    local waveA = math.sin(time * 0.6 + phaseOffset * 0.6) * 0.7
+                    local waveB = math.sin(time * 0.3 + dist * 0.5) * 0.3
+                    yMove = (waveA + waveB) * (Settings.ToyMod.FlapRange * 0.35) * mul
+                    zRot = (waveA * 1.2 + waveB * 0.5) * Settings.ToyMod.FlapRange * mul
+
+                elseif Settings.ToyMod.FlapType == 12 then
+                    ローカル回転数 = 時間 * 120 + 距離 * 40
+                    zRot = rot % 360
+                    yMove = math.sin(time * 1.5 + phaseOffset * 1.5) * (Settings.ToyMod.FlapRange * 0.25) * mul
+                終わり
+            終わり
+
+            -- 蟾ｦ蜿ｳ荳｡譁ケ蜷後§隗貞ｺｦ�医が繝™繧ｸ繝翫Ν貅匁侠��
+            ローカルの applyAngleH = Settings.ToyMod.AngleH
+
+            ローカル targetCFrame = root
+                * CFrame.new(xOff, Settings.ToyMod.YOffset + yMove, Settings.ToyMod.ZOffset)
+                * CFrame.Angles(
+                    math.rad(Settings.ToyMod.AngleV)
+                    math.rad(appliedAngleH)
+                    math.rad(zRot)
+                ）
+
+            State.ToyModWings.TargetCFrames[i] = targetCFrame
+            State.ToyModWings.BodyPositions[i].Position = targetCFrame.Position
+            State.ToyModWings.AlignOrientations[i].CFrame = targetCFrame
+        終わり
+    終わり）
+終わり
+
+function ToyModFeature.DestroyWings()
+    State.ToyModWings.Connection の場合
+        State.ToyModWings.Connection:Disconnect()
+        State.ToyModWings.Connection = nil
+    終わり
+    
+    for _, v in pairs(State.ToyModWings.BodyPositions) do
+        v と v.Parent が一致した場合、v を破棄します。
+    終わり
+    
+    for _, v in pairs(State.ToyModWings.AlignOrientations) do
+        v と v.Parent が一致した場合、v を破棄します。
+    終わり
+    
+    for _, info in pairs(State.ToyModWings.OriginalAnchored) do
+        info.Part と info.Part.Parent が一致する場合、
+            info.Part.Anchored = info.Anchored
+        終わり
+    終わり
+
+    State.ToyModWings.Parts = {}
+    State.ToyModWings.BodyPositions = {}
+    State.ToyModWings.AlignOrientations = {}
+    State.ToyModWings.OriginalAnchored = {}
+    State.ToyModWings.FlapTime = 0
+    State.ToyModWings.TargetCFrames = {}
+終わり
+
+-- ============================================
+-- 列車制御讖溯
+-- ============================================
+local TrainFeature = {}
+
+関数 TrainFeature.getMoveVector()
+    return CM:GetMoveVector()
+終わり
+
+function TrainFeature.getToyFolder()
+    return Workspace:FindFirstChild(LocalPlayer.Name .. "SpawnedInToys")
+終わり
+
+function TrainFeature.getToyInFolder()
+    ローカルフォルダ = TrainFeature.getToyFolder()
+    フォルダの場合
+        return folder:FindFirstChild(Settings.TrainControl.ToyName)
+    終わり
+    nil を返す
+終わり
+
+function TrainFeature.spawnToy(targetCFrame)
+    local menu = ReplicatedStorage:FindFirstChild("MenuToys")
+    local spawnRF = menu and menu:FindFirstChild("SpawnToyRemoteFunction")
+    if not spawnRF then return nil end
+    local ok = pcall(function()
+        spawnRF:InvokeServer(Settings.TrainControl.ToyName, targetCFrame, Vector3.new(0, 0, 0))
+    終わり）
+    問題がなければnilを返す。
+    local start = tick()
+    while tick() - start < Settings.TrainControl.SpawnTimeout do
+        local toy = TrainFeature.getToyInFolder()
+        おもちゃがあればおもちゃを返す、終了
+        タスクを待機(0.01)
+    終わり
+    nil を返す
+終わり
+
+関数 TrainFeature.getHRP()
+    …"
