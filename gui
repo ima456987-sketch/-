@@ -1,0 +1,42 @@
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local player = Players.LocalPlayer
+
+-- ScreenGuiの設定 (ResetOnSpawnをfalseにすることで死んでも消えない)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "UtilityGui"
+screenGui.ResetOnSpawn = false 
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- メインフレーム
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 150, 0, 100)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.Parent = screenGui
+
+-- リスポーンボタン
+local respawnButton = Instance.new("TextButton")
+respawnButton.Size = UDim2.new(0, 130, 0, 30)
+respawnButton.Position = UDim2.new(0, 10, 0, 10)
+respawnButton.Text = "リスポーン"
+respawnButton.Parent = frame
+
+respawnButton.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0
+    end
+end)
+
+-- 退出ボタン (Robloxメニューを開くのではなく、エラーを出して退出させる手法)
+local leaveButton = Instance.new("TextButton")
+leaveButton.Size = UDim2.new(0, 130, 0, 30)
+leaveButton.Position = UDim2.new(0, 10, 0, 60)
+leaveButton.Text = "ゲームを抜ける"
+leaveButton.Parent = frame
+
+leaveButton.MouseButton1Click:Connect(function()
+    -- ローカルで無理やりエラーを起こして退出させる
+    game:Shutdown()
+end)
